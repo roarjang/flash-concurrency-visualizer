@@ -14,7 +14,7 @@ The implementation should proceed in small, inspectable steps:
 
 `small implementation step -> verification -> commit`
 
-The delivery order should establish the frontend foundation, define verified static data contracts, build one complete Point Lost Update vertical slice, validate that slice, and only then extend the same system to Coupon Overselling, Duplicate Coupon Issuance, and Redis-specific views.
+The delivery order should establish the frontend foundation, define verified static data contracts, build one complete Point Lost Update vertical slice, validate that slice, and only then extend the same system to Coupon Overselling, Duplicate Coupon Issuance, and the shared Redis architecture section.
 
 Point Lost Update is the first vertical slice because it has the smallest scenario, the clearest expected-vs-actual contrast, and a strategy set that exercises the shared UI patterns: baseline failure reproduction, pessimistic lock, optimistic lock without retry, and atomic update.
 
@@ -49,7 +49,11 @@ Implementation must follow these settled decisions:
 - Collapsed evidence section on desktop and mobile.
 - Public GitHub evidence links in rendered UI.
 - Local `repositoryPath` values kept as development metadata and never rendered.
-- Redis strategies presented separately from the first database comparison chart.
+- Redis is a shared coupon-issuance architecture extension, not a fourth experiment.
+- Redis renders once after the experiment workspace and outside experiment selection.
+- Redis uses a static architecture flow, two always-visible capability cards, and collapsed disclosures.
+- Redis uses no playback, animation, chart, selector, dynamic summary, or dedicated tab.
+- PostgreSQL remains the durable source of truth.
 
 Do not reopen these decisions during MVP implementation.
 
@@ -93,12 +97,11 @@ flash-concurrency-visualizer/
         DuplicateComparisonCards.tsx
         DuplicateConditions.tsx
         DuplicateExplanation.tsx
-      charts/
-        StrategyComparisonChart.tsx
-        RedisGateChart.tsx
-        ChartTextAlternative.tsx
       redis/
         RedisGateSection.tsx
+        RedisCapabilityCards.tsx
+        RedisResponsibilityDisclosure.tsx
+        RedisEvidenceDisclosure.tsx
     data/
       experiments.ts
       strategies.ts
@@ -123,11 +126,11 @@ Architecture guidance:
 - `data/` contains verified static records only after Phase 1.
 - `types/` defines the contract between data and UI.
 - `components/experiment/` owns the shared explanation structure.
-- `charts/` isolates Recharts usage and chart text alternatives.
 - `components/point/PointPlayback.tsx` owns the focused Lost Update failure playback and state beginning in Phase 4.
 - `components/coupon/` reuses the recruiter-first card and disclosure pattern without importing Point playback behavior.
 - `components/duplicate/` reuses the finalized Coupon static comparison pattern without playback, charts, selectors, or Redis content.
-- `redis/` keeps Redis front-line gate explanation separate from database strategy comparison.
+- `redis/` owns one shared section rendered after the experiment panel, independent of the selected experiment.
+- The shared Redis section applies only to coupon issuance scenarios and must not imply that Redis is part of Point Lost Update.
 
 ## 4. Static Data Model Plan
 
@@ -148,7 +151,7 @@ Implementation order:
 4. Define expected result and observed result shapes.
 5. Define invariant assertions separately from documented observed examples.
 6. Define comparison values for Point and Coupon strategy cards and any separately approved later visualizations.
-7. Define Redis grouping data separately from database strategy comparison data.
+7. Keep Redis admission-control records separate from database strategy comparison data.
 8. Define Korean and English display names.
 9. Define caveat fields, especially for optimistic-lock observed examples.
 10. Keep `testStatus` and `currentlyExecutable` as evidence metadata, not user-facing result logic.
@@ -178,7 +181,7 @@ Shared components:
 - Point comparison cards.
 - Coupon comparison cards.
 - Duplicate comparison cards.
-- Chart container and chart text alternative.
+- Shared Redis architecture flow and capability cards.
 - Compact collapsed strategy explanation.
 - Collapsed evidence disclosure.
 - Responsive layout shell.
@@ -192,9 +195,9 @@ Component ownership should follow the UX duplication rules:
 - Point comparison cards own all Point strategy-specific outcomes.
 - Coupon comparison cards own all Coupon database-strategy outcomes.
 - Duplicate comparison cards own the transaction-only and DB UNIQUE outcomes.
-- Chart owns strategy comparison where a chart is the right fit.
 - Tooltips and expandable details own secondary counts.
 - Strategy explanation owns concise mechanism and trade-off copy.
+- The shared Redis flow owns admission control; Redis capability cards own Counter/Lua responsibilities; the Redis disclosure owns PostgreSQL and cross-store boundaries.
 - Evidence disclosure owns source verification.
 
 ## 6. Phase 0: Project Foundation
@@ -279,7 +282,7 @@ Suggested future areas:
 - Transcribe verified Point, Overselling, Duplicate, and Redis records from `docs/experiment-data.md`.
 - Store Korean and English names for experiments and strategies.
 - Store baseline scenarios as intentional failure-reproduction configurations.
-- Store strategy groups: Baseline, Database strategies, Redis front-line gate.
+- Store strategy groups: Baseline, Database strategies, and Redis admission control.
 - Store chart-ready values without losing the underlying recorded values.
 - Store optimistic-lock values as documented observed examples where applicable.
 - Store `testStatus` and `currentlyExecutable` separately from user-facing result conclusions.
@@ -580,12 +583,11 @@ Suggested future areas:
   - Coupon stock `100`.
   - Concurrent requests `1,000`.
   - Distinct users `1,000`.
-  - Retry policy none.
   - Before `Coupon.@Version` for transaction-only failure reproduction.
   - Lock hold or delay only where relevant.
 - Add a compact collapsed strategy explanation.
 - Add collapsed evidence and keep the recorded-data limitation secondary.
-- Keep Redis Counter and Redis Lua for the separately planned Redis front-line gate section.
+- Keep Redis Counter and Redis Lua for the shared Phase 7 section outside experiment selection.
 
 ### Acceptance Criteria
 
@@ -649,17 +651,18 @@ Suggested future areas:
   - Transaction Only: `중복 발급 발생`, `발급 기록 10건`.
   - DB Unique Constraint: `중복 발급 방지`, `발급 기록 1건`.
 - Add collapsed duplicate scenario conditions:
-  - Coupon stock `1,000`.
   - Concurrent requests `100`.
   - Same user.
   - Same coupon.
   - Allowed issuance `1`.
-  - Before unique constraint for transaction-only failure reproduction.
-- Treat coupon stock as recorded setup context only, not as the Phase 6 correctness concern.
+  - `DB UNIQUE 적용 전 · Retry 없음 · 애플리케이션 레벨 중복 확인`.
+- Do not show coupon stock in the Duplicate conditions grid or present Phase 6 as a stock-control comparison.
 - Add a compact collapsed strategy explanation using two concise lines per strategy.
+  - Transaction Only: `여러 요청이 중복 확인을 통과할 수 있다.`
+  - Application-level lookup alone cannot guarantee final uniqueness.
 - Explain that DB UNIQUE protects `(user_id, coupon_id)` uniqueness and is not stock control.
 - Add collapsed evidence and keep the recorded-data limitation secondary.
-- Keep Redis Lua for the separately planned Redis front-line gate section.
+- Keep Redis Lua for the shared Phase 7 section outside experiment selection.
 
 ### Acceptance Criteria
 
@@ -690,54 +693,81 @@ Suggested future areas:
 
 `feat: add duplicate coupon issuance experiment`
 
-## 13. Phase 7: Redis Front-Line Gate Section
+## 13. Phase 7: Shared Redis Admission-Control Section
 
 ### Goal
 
-Implement Redis strategy views separately from the database comparison chart.
+Implement one shared coupon-issuance architecture section that explains Redis admission control before PostgreSQL persistence.
 
 ### Scope
 
-Redis Counter, Redis Lua stock gate, Redis Lua duplicate gate, Redis/PostgreSQL boundary explanation, Redis-specific charts, and evidence links.
+One shared Redis section outside the experiment tab panel, a static architecture flow, two always-visible capability cards, a collapsed responsibility explanation, and collapsed evidence.
 
 ### Files or areas likely to be affected
 
 Suggested future areas:
 
+- `src/App.tsx`
 - `src/components/redis/RedisGateSection.tsx`
-- `src/components/charts/RedisGateChart.tsx`
-- `src/components/experiment/TradeoffPanel.tsx`
-- `src/components/experiment/EvidenceDisclosure.tsx`
-- `src/data/experiments.ts`
+- `src/components/redis/RedisCapabilityCards.tsx`
+- `src/components/redis/RedisResponsibilityDisclosure.tsx`
+- `src/components/redis/RedisEvidenceDisclosure.tsx`
+- `src/index.css`
 
 ### Tasks
 
-- Add a separate section titled `Redis 기반 Front-line Gate`.
-- Present Redis Counter and Redis Lua as Redis strategies, not database strategies.
-- Include Redis Counter for stock gate.
-- Include Redis Lua for stock gate and duplicate gate.
-- Explain Redis-side atomicity:
-  - Redis Counter gates stock slots.
-  - Redis Lua atomically checks Redis-side stock and user admission state.
-- Explain PostgreSQL boundary:
+- Render `RedisGateSection` once after the selected experiment workspace and outside the experiment tab panel.
+- Keep Point, Coupon, and Duplicate workspaces unchanged.
+- Do not add Redis to experiment selection or create a fourth experiment tab.
+- Add the section title `Redis 기반 선행 제어`.
+- Add the supporting description `쿠폰 발급 요청을 PostgreSQL 저장 전에 선별하는 아키텍처입니다.`
+- Add the static architecture flow:
+  - `많은 요청`.
+  - `Redis 선행 승인`.
+  - `PostgreSQL 저장`.
+- Place this boundary copy near the flow:
+  - `Redis 승인은 발급 완료가 아닙니다.`
+  - `PostgreSQL 저장이 완료되어야 최종 기록이 됩니다.`
+- Show two capability cards together without interaction:
+  - Redis Counter:
+    - `재고 슬롯 선행 제어`.
+    - `1,000건 요청 → 100건 승인`.
+    - `사용자 중복은 확인하지 않음`.
+  - Redis Lua Script:
+    - `재고와 사용자 조건을 함께 확인`.
+    - Stock scenario: `1,000건 → 100건`.
+    - Duplicate scenario: `100건 → 1건`.
+- Add a collapsed responsibility explanation:
   - PostgreSQL remains the durable source of truth.
-  - Redis acceptance is not final issuance completion.
+  - Redis approval is not issuance completion.
+  - Database uniqueness constraints remain necessary.
   - Redis and PostgreSQL are not one distributed transaction.
-  - Database constraints remain necessary.
+- Add collapsed Redis evidence for the test fixture, Lua script, and Redis consistency boundary document.
 - Label Redis implementation paths as experiment fixtures, not public production APIs.
-- Reuse summary, trade-off, evidence, and chart patterns where they fit.
-- Add Redis-specific chart context rather than mixing Redis values into the first database chart.
+- Reuse the existing card and disclosure visual language.
 
 ### Acceptance Criteria
 
-- Redis strategies are visually and conceptually separated from database strategy comparison.
+- Redis renders exactly once.
+- Redis is outside experiment selection and remains independent of the selected Point, Coupon, or Duplicate tab.
+- Redis is presented as a shared coupon-issuance architecture extension, not a fourth concurrency problem.
+- The Point, Coupon, and Duplicate workspaces remain unchanged.
+- The architecture flow communicates `많은 요청 → Redis 선행 승인 → PostgreSQL 저장`.
+- Redis Counter and Redis Lua are visible together without a selector.
+- Redis applies to coupon issuance scenarios only and is not associated with Point Lost Update.
 - Redis Counter is not described as duplicate protection.
 - Redis Lua is not described as durable database truth.
+- Redis approval is not described as issuance completion.
+- PostgreSQL remains the durable source of truth and DB uniqueness remains the final duplicate guard.
 - No distributed transaction claim appears.
 - Evidence links include relevant public GitHub documents and source files.
 
 ### Explicit Non-Goals
 
+- Do not add a fourth experiment or dedicated Redis tab.
+- Do not add playback or animation.
+- Do not add a chart.
+- Do not add a selector, capability tabs, or dynamic summary.
 - Do not add backend Redis APIs.
 - Do not add live Redis calls.
 - Do not imply Redis replaces PostgreSQL persistence.
@@ -745,7 +775,7 @@ Suggested future areas:
 
 ### Suggested Commit Boundary
 
-`feat: add redis front-line gate section`
+`feat: add shared redis admission section`
 
 ## 14. Phase 8: Responsive Design and Accessibility
 
@@ -782,12 +812,12 @@ Suggested future areas:
   - collapsed Point details.
 - Verify Coupon layout order: problem summary, four strategy cards, collapsed details.
 - Verify Duplicate layout order: problem summary, two strategy cards, collapsed details.
-- Keep chart labels readable and avoid horizontal scrolling for the primary conclusion.
+- Verify the shared Redis section follows the experiment panel and remains outside tab selection.
+- Keep the Redis flow and both capability cards readable without horizontal scrolling.
 - Keep the finalized representative Point request count on mobile.
 - Ensure experiment tabs are keyboard-accessible and expose selected state.
 - Ensure focus states are visible.
 - Ensure evidence disclosure exposes expanded and collapsed state.
-- Add chart text alternatives.
 - Ensure replay and post-completion stage controls are accessible.
 - Respect reduced-motion preferences.
 - Ensure state is not communicated by color alone.
@@ -799,7 +829,7 @@ Suggested future areas:
 - Keyboard users can operate tabs, Point playback controls, completed stage badges, and evidence disclosure.
 - Screen readers receive each experiment problem summary and card outcomes before secondary details.
 - Reduced-motion users can access completed state without motion-heavy playback.
-- Charts have useful text alternatives.
+- The Redis flow and capability cards have a meaningful semantic reading order.
 
 ### Explicit Non-Goals
 
@@ -850,7 +880,7 @@ Optional checks:
 
 - Component snapshot tests for static sections.
 - Visual regression screenshots.
-- Additional chart rendering tests.
+- Shared Redis section rendering and placement tests.
 - Link availability checks that access the network, if approved and stable.
 
 ### Acceptance Criteria
@@ -987,7 +1017,7 @@ Recommended small commit groups:
 | Point failure playback | `feat: add point lost update failure playback` |
 | Overselling support | `feat: add coupon overselling database strategies` |
 | Duplicate support | `feat: add duplicate coupon issuance experiment` |
-| Redis section | `feat: add redis front-line gate section` |
+| Redis section | `feat: add shared redis admission section` |
 | Accessibility and responsive work | `feat: improve responsive and accessible experience` |
 | Tests | `test: add visualizer quality checks` |
 | Deployment documentation or setup | `chore: prepare vercel static deployment` |
@@ -1022,7 +1052,10 @@ MVP completion checklist:
 - Duplicate Coupon Issuance has no playback, strategy selector, chart, dynamic result summary, or Redis content.
 - DB UNIQUE is presented as a user-coupon uniqueness guard, not as stock control.
 - Optimistic-lock observed examples are labeled correctly.
-- Redis Counter and Redis Lua appear in a separate Redis front-line gate section.
+- Redis Counter and Redis Lua appear once in a shared section after the experiment workspace.
+- Redis is not a fourth experiment and has no dedicated tab.
+- Redis uses no playback, animation, chart, selector, or dynamic summary.
+- The shared Redis section applies only to coupon issuance scenarios.
 - Redis is not presented as PostgreSQL durability or as a distributed transaction.
 - Point failure playback is optional, explicit, replayable, stage-inspectable after completion, and reduced-motion aware.
 - The result remains understandable without starting playback.
@@ -1032,7 +1065,6 @@ MVP completion checklist:
 - Local repository paths are never rendered.
 - Mobile users can understand the primary conclusion without horizontal scrolling.
 - Keyboard and screen reader accessibility baseline is met.
-- Chart text alternatives are present.
 - Vercel deployment succeeds as a static app.
 - Public deployed URL is verified on desktop and mobile.
 - Portfolio link to the deployed visualizer is verified.
@@ -1069,8 +1101,8 @@ These items are not part of the MVP phases unless separately approved:
 | Coupon becomes report-like | Keep all four outcomes visible and omit playback, selectors, charts, and dynamic summaries in Phase 5. |
 | Duplicate becomes report-like | Keep both outcomes visible and omit playback, selectors, charts, dynamic summaries, Redis, and stock-control concerns in Phase 6. |
 | Optimistic-lock example counts look deterministic | Keep scheduling and no-retry variability in collapsed technical detail. |
-| Redis and PostgreSQL responsibilities are conflated | Implement Redis as a separate Phase 7 section with boundary copy and separate visual context. |
-| Mobile chart readability is poor | Address any separately approved chart labels and alternatives in Phase 8 before deployment. |
+| Redis and PostgreSQL responsibilities are conflated | Show one shared Phase 7 architecture flow with explicit approval, persistence, and durability boundaries. |
+| Redis looks like a fourth experiment | Keep it outside experiment selection and render it once after the selected workspace. |
 | Evidence links break or expose local paths | Validate public GitHub URLs and prevent renderable local paths in Phases 1 and 9. |
 | Vercel setup becomes more complex than needed | Use Vite defaults and add Vercel-specific configuration only if required in Phase 10. |
 

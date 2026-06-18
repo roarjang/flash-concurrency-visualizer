@@ -19,6 +19,8 @@ Coupon Overselling follows the same recruiter-first comparison pattern without p
 
 Duplicate Coupon Issuance reuses the finalized Coupon static comparison pattern with two always-visible cards. Its `1건 → 10건` violation is immediately understandable, so it also uses no playback, chart, strategy selector, or dynamic summary.
 
+Redis is not a fourth experiment. It appears once after the selected experiment workspace as a shared coupon-issuance architecture extension. It uses a static flow and two always-visible capability cards to explain admission control before PostgreSQL persistence.
+
 The interface should feel like an interactive technical explanation, not a generic analytics dashboard and not an animation showcase.
 
 ## 2. Audience and Review Context
@@ -52,6 +54,8 @@ Decision:
 - Do not require route-based experiment pages for the MVP.
 - Keep the structure route-compatible for a possible future extension, but do not make routing part of the current UX requirement.
 - Include Duplicate Coupon Issuance in the first public release as the third experiment tab. It demonstrates a distinct invariant: uniqueness of the user-coupon pair.
+- Render the shared Redis section once outside the experiment tab panel, after the selected experiment workspace.
+- Redis must not become a fourth experiment or a dedicated experiment tab.
 
 Point Lost Update page structure:
 
@@ -77,6 +81,14 @@ Duplicate Coupon Issuance page structure:
 3. Collapsed experiment conditions.
 4. Collapsed strategy explanation.
 5. Collapsed evidence and static-data limitation.
+
+Overall page structure:
+
+1. Project header.
+2. Experiment tabs.
+3. Selected experiment workspace: Point, Coupon, or Duplicate.
+4. Shared Redis section.
+5. Footer.
 
 The first visible experiment should default to Point Lost Update because it has the smallest scenario and is easiest to understand quickly. Duplicate Coupon Issuance should be available from the first release, but it should not overcrowd the first viewport.
 
@@ -120,6 +132,19 @@ Recruiter scan path:
 
 The Duplicate problem summary owns the failure definition. The two comparison cards own the strategy outcomes. Disclosures own technical depth.
 
+Shared Redis interaction flow:
+
+1. Finish or skip the selected experiment workspace.
+2. Read the static flow `많은 요청 → Redis 선행 승인 → PostgreSQL 저장`.
+3. Compare the Redis Counter and Redis Lua capabilities together.
+4. Open responsibility details or Redis evidence only when more depth is wanted.
+
+Recruiter scan path:
+
+`Point → Coupon → Duplicate → Redis`
+
+The architecture flow owns the admission-control sequence. The capability cards own Redis-specific responsibilities. Collapsed disclosures own Redis/PostgreSQL boundaries and evidence.
+
 ## 5. Landing Section
 
 The first viewport should be compact and direct.
@@ -150,7 +175,7 @@ Experiment options:
 | --- | --- | --- | --- |
 | `point-lost-update` | `포인트 Lost Update` | `Point Lost Update` | `동시 차감 요청이 같은 잔액을 덮어쓰는 문제` |
 | `coupon-overselling` | `쿠폰 재고 초과 발급` | `Coupon Overselling` | `재고보다 많은 발급 기록이 생성되는 문제` |
-| `duplicate-coupon-issuance` | `중복 쿠폰 발급` | `Duplicate Issuance` | `같은 사용자가 같은 쿠폰을 여러 번 받는 문제` |
+| `duplicate-coupon-issuance` | `쿠폰 중복 발급` | `Duplicate Issuance` | `한 사용자가 같은 쿠폰을 여러 번 발급받을 수 있는 문제` |
 
 Behavior:
 
@@ -162,7 +187,7 @@ Behavior:
 - Point Lost Update is selected by default.
 - Duplicate Coupon Issuance is included in the first public release as the third tab, but the first impression should remain focused on Point Lost Update.
 
-The selector should not include Redis as an experiment group. Redis is a strategy grouping within coupon-related experiments.
+The selector must not include Redis as an experiment group. Redis is a shared coupon-issuance architecture extension outside experiment selection.
 
 ## 7. Strategy Presentation
 
@@ -183,7 +208,7 @@ Coupon Overselling:
   - `비관적 락`
   - `낙관적 락`
   - `조건부 원자적 업데이트`
-- Keep Redis Counter and Redis Lua in the separately planned Redis front-line gate section.
+- Keep Redis Counter and Redis Lua in the shared Redis section after the experiment workspace.
 - Do not hide the database comparison behind interaction.
 
 Duplicate Coupon Issuance:
@@ -192,7 +217,7 @@ Duplicate Coupon Issuance:
 - Show both database strategies together as always-visible comparison cards:
   - `트랜잭션만 적용`
   - `DB 유니크 제약조건`
-- Keep Redis Lua in the separately planned Redis front-line gate section.
+- Keep Redis Lua in the shared Redis section after the experiment workspace.
 - Do not hide the comparison behind interaction.
 
 Baseline labels should be framed as failure-reproduction configurations, not obsolete code.
@@ -238,20 +263,18 @@ Coupon Overselling:
 - `쿠폰 재고 100`
 - `동시 요청 1,000`
 - `서로 다른 사용자 1,000명`
-- `Retry 없음`
 - `조건: Coupon.@Version 적용 전` for the transaction-only failure scenario
 - `Lock hold 5ms` only where relevant
 
 Duplicate Coupon Issuance:
 
-- `쿠폰 재고 1,000`
 - `동시 요청 100`
 - `같은 사용자`
 - `같은 쿠폰`
 - `허용 발급 1건`
 - Place failure reproduction context below the numeric conditions:
-  - `DB UNIQUE 적용 전 · Retry 없음 · 애플리케이션 중복 확인`
-- Coupon stock is recorded setup context only. Do not present Phase 6 as a stock-control comparison.
+  - `DB UNIQUE 적용 전 · Retry 없음 · 애플리케이션 레벨 중복 확인`
+- Do not show coupon stock in the Duplicate conditions grid or present Phase 6 as a stock-control comparison.
 
 Expandable test environment:
 
@@ -436,14 +459,6 @@ Duplicate Coupon Issuance strategy comparison cards:
 | Boundary | DB UNIQUE protects `(user_id, coupon_id)` uniqueness; it is not stock control |
 | Non-goal | No playback, chart, strategy selector, dynamic summary, Redis content, or stock-control comparison |
 
-Redis chart context:
-
-- Use a separate section or chart.
-- Redis Counter stock gate can compare accepted Redis count, DB issued records, and stock limit.
-- Redis Lua stock gate can compare Redis count, Redis issued-user set size, DB issued records, and stock limit.
-- Redis Lua duplicate gate can compare Redis accepted user count and DB duplicate count.
-- Keep Redis/PostgreSQL source-of-truth boundary visible.
-
 ## 12. Strategy Explanation
 
 Point, Coupon, and Duplicate strategy explanations should remain in one compact disclosure below the comparison cards.
@@ -470,7 +485,7 @@ Coupon should adapt the same compact pattern to stock control. Do not restore se
 Duplicate should use the same two-line pattern:
 
 - 트랜잭션만 적용:
-  - `여러 요청이 첫 저장 전에 중복 확인을 통과할 수 있다.`
+  - `여러 요청이 중복 확인을 통과할 수 있다.`
   - `애플리케이션 조회만으로 최종 유일성을 보장할 수 없다.`
 - DB 유니크 제약조건:
   - `같은 사용자-쿠폰 조합의 두 번째 저장을 DB가 거부한다.`
@@ -480,32 +495,64 @@ Duplicate should use the same two-line pattern:
 
 - Keep scheduling-dependent optimistic-lock behavior in the collapsed explanation.
 - Keep lock waiting and query-centered trade-offs concise.
-- Keep database uniqueness and Redis/PostgreSQL boundaries in their relevant later experiment sections.
+- Keep database uniqueness in Duplicate details and Redis/PostgreSQL boundaries in the shared Redis disclosure.
 - Do not repeat the primary card outcome inside every technical paragraph.
 
-## 14. Redis-Specific Section
+## 14. Shared Redis Section
 
-Recommended presentation: a separate strategy group and follow-up section after database strategies.
+Redis is a shared coupon-issuance architecture extension, not a fourth concurrency problem. Render it once outside the experiment tab panel, after the selected Point, Coupon, or Duplicate workspace and before the footer. It remains visible regardless of the selected experiment.
 
-The Redis section should explain:
+Section title:
 
-- Redis is a front-line gate in these experiments.
-- Redis Counter limits stock-sized admission slots.
-- Redis Lua can atomically execute Redis-side stock and duplicate checks.
-- PostgreSQL remains the durable source of truth.
-- Redis does not replace database constraints.
-- Redis and PostgreSQL are not one distributed transaction.
-- The implementation paths are controlled experiment fixtures, not public production APIs.
+`Redis 기반 선행 제어`
 
-Recommended UI:
+Supporting description:
 
-- A section titled `Redis 기반 Front-line Gate`.
-- A short boundary diagram: `Request -> Redis gate -> PostgreSQL persistence`.
-- Separate cards or tabs for `Redis Counter` and `Redis Lua`.
-- A small warning/caveat box: `Redis 통과는 최종 발급 완료가 아닙니다. DB 저장이 성공해야 durable record가 됩니다.`
-- Evidence links to the concurrency test fixture and Redis consistency boundary document.
+`쿠폰 발급 요청을 PostgreSQL 저장 전에 선별하는 아키텍처입니다.`
 
-This should be visible after the database comparison, not mixed into the first chart.
+Section structure:
+
+1. Compact introduction.
+2. Static architecture flow.
+3. Two always-visible capability cards.
+4. Collapsed responsibility explanation.
+5. Collapsed Redis evidence.
+
+Static architecture flow:
+
+`많은 요청 → Redis 선행 승인 → PostgreSQL 저장`
+
+Boundary copy:
+
+`Redis 승인은 발급 완료가 아닙니다.`
+
+`PostgreSQL 저장이 완료되어야 최종 기록이 됩니다.`
+
+Capability cards:
+
+| Capability | Primary responsibility | Recorded examples | Important boundary |
+| --- | --- | --- | --- |
+| `Redis 카운터` | 재고 슬롯 선행 제어 | `1,000건 요청 → 100건 승인` | 사용자 중복은 확인하지 않음 |
+| `Redis Lua 스크립트` | 재고와 사용자 조건을 함께 확인 | 재고 `1,000건 → 100건`, 중복 `100건 → 1건` | Redis 내부 확인과 갱신만 원자적임 |
+
+Responsibility ownership:
+
+- The architecture flow explains request admission before persistence.
+- The capability cards explain Redis Counter and Redis Lua responsibilities.
+- The responsibility disclosure explains that PostgreSQL remains durable truth, database uniqueness constraints remain necessary, and Redis/PostgreSQL do not form one distributed transaction.
+- The evidence disclosure owns test-fixture and Redis-boundary source links.
+
+Explicit non-goals:
+
+- No fourth experiment tab.
+- No dedicated Redis tab.
+- No playback or animation.
+- No chart.
+- No capability selector or tabs.
+- No dynamic summary.
+- No live Redis calls.
+- Do not imply that Redis applies to Point Lost Update.
+- Do not imply that Redis approval equals issuance completion.
 
 ## 15. Evidence and Source Links
 
@@ -552,7 +599,9 @@ Component ownership:
 | Duplicate comparison cards | Transaction-only and DB UNIQUE outcomes for the user-coupon uniqueness invariant |
 | Expandable details | Secondary counts such as successCount, failCount, Redis count, issued-user set size |
 | Strategy explanation | Concise mechanism and most important trade-off |
-| Redis section | Redis/PostgreSQL boundary and Redis admission control |
+| Redis architecture flow | Request admission before PostgreSQL persistence |
+| Redis capability cards | Redis Counter and Redis Lua responsibilities |
+| Redis responsibility disclosure | PostgreSQL durability, DB constraints, and cross-store boundaries |
 | Evidence section | Source verification |
 | Static-data disclosure/footer | Recorded-result and no-live-execution limitation |
 
@@ -563,7 +612,7 @@ Avoid repeating:
 - The same Duplicate outcome in a separate dynamic summary and comparison card.
 - Request counts outside cards when they are already available in conditions.
 - Full environment metadata in the primary experiment area.
-- Redis/PostgreSQL boundary explanation in every Redis tooltip; show it once clearly in the Redis section.
+- Redis/PostgreSQL boundary explanation in every capability card; show it once clearly in the responsibility disclosure.
 - Long strategy descriptions in selector labels.
 - The full Point scenario context in every card; keep it in the collapsed conditions disclosure.
 - Calculated diagnostic values such as `expectedBalanceBySuccessCount` in the recruiter-facing view.
@@ -577,21 +626,25 @@ Desktop:
 - Use a compact card grid that keeps all four Point outcomes visible together.
 - Keep all four Coupon outcomes and both Duplicate outcomes visible together.
 - Keep the three experiment tabs visible near the top.
+- Place the shared Redis section after the selected experiment workspace and outside the tab panel.
+- Keep both Redis capability cards visible together.
 - Evidence appears as a collapsed section with a clear `근거 자료 보기` control.
 
 Tablet:
 
 - Use a single-column or balanced two-column layout depending on width.
-- Charts should use shorter labels or angled labels if needed.
+- Keep the Redis flow and both capability cards readable without horizontal scrolling.
 
 Mobile:
 
 - Point order: title/message, experiment tabs, problem summary, playback, four comparison cards, collapsed details.
 - Coupon order: title/message, experiment tabs, problem summary, four comparison cards, collapsed details.
 - Duplicate order: title/message, experiment tabs, problem summary, two comparison cards, collapsed details.
+- After the selected experiment workspace, show the shared Redis introduction, static flow, two capability cards, and collapsed disclosures.
 - The Point problem and strategy outcomes must be readable without horizontal scrolling.
 - The Coupon problem and strategy outcomes must be readable without horizontal scrolling.
 - The Duplicate problem and strategy outcomes must be readable without horizontal scrolling.
+- The Redis flow and both capability cards must be readable without horizontal scrolling.
 - Experiment selector can scroll horizontally if touch targets remain large.
 - Comparison cards should fit the viewport; use horizontal scroll only as a last resort and never for the primary conclusion.
 - Evidence links must have comfortable touch targets.
@@ -605,7 +658,7 @@ Requirements:
 - Focus states must be visible.
 - Playback controls must be buttons with screen-reader labels.
 - Evidence expand/collapse controls must be keyboard-accessible and expose expanded/collapsed state.
-- Provide chart text alternatives where charts are used, and concise card alternatives for Point Lost Update.
+- Redis capability cards and the static flow must have meaningful semantic reading order.
 - Do not communicate success or failure by color alone.
 - Ensure sufficient contrast for text, chart labels, and status indicators.
 - Respect reduced-motion preferences.
@@ -625,7 +678,7 @@ Recommended characteristics:
 - Strong hierarchy for result conclusions.
 - Restrained color use.
 - Cards used selectively for repeated items, summaries, and evidence groups.
-- Clean chart presentation.
+- Clean static architecture presentation.
 - Subtle animation that supports explanation.
 
 Avoid:
@@ -683,10 +736,14 @@ Because the app uses static verified data, network loading should not be emphasi
 - Duplicate Coupon Issuance uses a compact problem summary and two always-visible comparison cards.
 - Duplicate Coupon Issuance uses no playback, chart, strategy selector, dynamic summary, Redis content, or stock-control comparison.
 - DB UNIQUE is described as protection for the user-coupon uniqueness invariant, not as stock control.
+- Redis renders once outside experiment selection as a shared coupon-issuance architecture section.
+- Redis uses the static flow `많은 요청 → Redis 선행 승인 → PostgreSQL 저장`.
+- Redis Counter and Redis Lua are always visible together without playback, animation, chart, selector, or dynamic summary.
+- Redis approval is distinguished from issuance completion, and PostgreSQL remains the durable source of truth.
 - Technical conditions, limitations, and evidence remain available through collapsed details.
 
 ## 22. Open UX Decisions
 
 No blocking UX decisions remain for the MVP implementation roadmap.
 
-Do not reopen settled technical decisions: static Vite app, Vercel deployment, Korean primary UI language, recorded-result visualization, public GitHub evidence links, single-page experiment tabs, Point Lost Update as the default experiment, Duplicate Coupon Issuance in the first public release, explicit Lost Update failure playback, no Coupon or Duplicate playback, always-visible Point, Coupon, and Duplicate database strategy cards, collapsed evidence sections, standardized Korean strategy labels, and separate Redis strategy grouping.
+Do not reopen settled technical decisions: static Vite app, Vercel deployment, Korean primary UI language, recorded-result visualization, public GitHub evidence links, three single-page experiment tabs, Point Lost Update as the default experiment, Duplicate Coupon Issuance in the first public release, explicit Lost Update failure playback, no Coupon or Duplicate playback, always-visible Point, Coupon, and Duplicate database strategy cards, collapsed evidence sections, standardized Korean strategy labels, and one shared Redis section outside experiment selection.
