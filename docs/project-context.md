@@ -37,6 +37,10 @@ For Coupon Overselling, the first view should make this scan path immediate:
 
 `재고 100장 → 발급 기록 1,000건 → 재고 초과 발급 → 전략별 결과`
 
+For Duplicate Coupon Issuance, the first view should make this scan path immediate:
+
+`허용 1건 → 발급 기록 10건 → 중복 발급 발생 → DB UNIQUE 적용 후 1건`
+
 Conditions, technical cause, guarantees, limitations, use cases, the static-data limitation, and evidence should remain available as secondary information rather than competing with the first-view comparison.
 
 The application should compare strategies without presenting any strategy as universally best. It should make correctness, contention, retry behavior, lock waiting, Redis/PostgreSQL boundaries, and operational complexity understandable at a portfolio-review level.
@@ -193,6 +197,16 @@ Coupon Overselling reuses the finalized recruiter-first comparison-card approach
 
 The Coupon problem summary explains the failure. The four static strategy cards explain outcomes. Collapsed disclosures contain technical depth. Coupon uses no playback, grouped bar chart, strategy selector, or dynamic summary section.
 
+Duplicate Coupon Issuance reuses the finalized Coupon static comparison pattern. Its interaction model is:
+
+1. Read the compact problem summary: allowed maximum `1`, recorded issued records `10`, and `중복 발급 발생`.
+2. Compare the transaction-only and DB UNIQUE outcomes together.
+3. Open conditions, strategy explanation, static-data limitation, or evidence only when wanted.
+
+Playback is unnecessary because the user-coupon uniqueness violation is immediately understandable from `1건 → 10건`. The Duplicate problem summary explains the failure. The two static comparison cards explain outcomes. Collapsed disclosures contain technical depth. Duplicate uses no playback, chart, strategy selector, or dynamic summary.
+
+DB UNIQUE protects the `(user_id, coupon_id)` uniqueness invariant by rejecting the second and later duplicate rows. It is not a stock-control strategy and must not be presented as protection against total coupon overselling. Redis remains outside Phase 6 and belongs to the separately planned front-line gate section.
+
 ## 8. Initial Scope
 
 ### Confirmed first-release scope
@@ -233,6 +247,10 @@ Coupon Duplicate Issuance:
 - Observed failure result: `successCount = 10`, `failCount = 90`, `issuedCouponCountByUserAndCoupon = 10`.
 - Current repository implementation state: `IssuedCoupon` now has the `uk_issued_coupon_user_coupon` unique constraint, so the original duplicate failure scenario is an earlier recorded experiment configuration.
 - Confirmed first-release scope: this experiment demonstrates the distinct invariant that one `(user_id, coupon_id)` pair should have at most one issued coupon record.
+- The recruiter-first presentation uses a compact problem summary and two always-visible database strategy cards.
+- Conditions, strategy explanation, static-data limitation, and evidence remain collapsed by default.
+- Duplicate Coupon Issuance does not use playback, a chart, a strategy selector, a dynamic summary, or Redis content.
+- DB UNIQUE is presented only as protection for user-coupon uniqueness, not as stock control.
 
 ### First-release Redis front-line gate section
 
@@ -321,6 +339,7 @@ The first visualizer version should satisfy these criteria:
 - A reviewer can understand the selected problem within about ten seconds.
 - The Point workspace summary, playback entry state, and all four Point strategy outcomes are immediately visible.
 - Coupon Overselling communicates `재고 100장 → 발급 기록 1,000건 → 재고 초과 발급 → 전략별 결과` within a few seconds.
+- Duplicate Coupon Issuance communicates `허용 1건 → 발급 기록 10건 → 중복 발급 발생 → DB UNIQUE 적용 후 1건` within a few seconds.
 - Displayed values match verified backend test evidence or are clearly marked as `TODO`/`Unverified`.
 - Test conditions remain discoverable near the result values and may be collapsed by default.
 - Scenario-specific conditions such as `before @Version` or `before unique constraint` remain available with the result context.
@@ -441,4 +460,9 @@ Risks:
 - Coupon Overselling reuses the finalized Point comparison-card pattern without playback.
 - Coupon Overselling uses a compact problem summary, four always-visible database strategy cards, and collapsed conditions, strategy explanation, and evidence.
 - Coupon Overselling does not use a strategy selector, grouped bar chart, or dynamic summary section.
+- Duplicate Coupon Issuance reuses the finalized Coupon static comparison pattern without playback.
+- Duplicate Coupon Issuance uses a compact problem summary, two always-visible database strategy cards, and collapsed conditions, strategy explanation, and evidence.
+- Duplicate Coupon Issuance does not use a chart, strategy selector, dynamic summary, or Redis content.
+- Playback is unnecessary for Duplicate because the `1건 → 10건` violation explains the failure immediately.
+- DB UNIQUE protects user-coupon uniqueness and is not stock control.
 - The static recorded-data limitation belongs in secondary disclosure or footer content, not the hero.

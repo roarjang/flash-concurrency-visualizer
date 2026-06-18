@@ -17,6 +17,8 @@ Primary reviewer journey:
 
 Coupon Overselling follows the same recruiter-first comparison pattern without playback, strategy selection, charts, or a dynamic summary.
 
+Duplicate Coupon Issuance reuses the finalized Coupon static comparison pattern with two always-visible cards. Its `1건 → 10건` violation is immediately understandable, so it also uses no playback, chart, strategy selector, or dynamic summary.
+
 The interface should feel like an interactive technical explanation, not a generic analytics dashboard and not an animation showcase.
 
 ## 2. Audience and Review Context
@@ -68,6 +70,14 @@ Coupon Overselling page structure:
 4. Collapsed strategy explanation.
 5. Collapsed evidence and static-data limitation.
 
+Duplicate Coupon Issuance page structure:
+
+1. Compact Duplicate Coupon Issuance problem summary.
+2. Two always-visible database strategy comparison cards.
+3. Collapsed experiment conditions.
+4. Collapsed strategy explanation.
+5. Collapsed evidence and static-data limitation.
+
 The first visible experiment should default to Point Lost Update because it has the smallest scenario and is easiest to understand quickly. Duplicate Coupon Issuance should be available from the first release, but it should not overcrowd the first viewport.
 
 ## 4. Primary User Flow
@@ -97,6 +107,18 @@ Coupon Overselling interaction flow:
 3. Open conditions, strategy explanation, or evidence only when more depth is wanted.
 
 The Coupon problem summary owns the failure definition. The strategy cards own the recorded outcomes. Disclosures own technical depth.
+
+Duplicate Coupon Issuance interaction flow:
+
+1. Read `허용 1건`, `발급 기록 10건`, and `중복 발급 발생` in a compact summary.
+2. Compare the transaction-only result with the DB UNIQUE result.
+3. Open conditions, strategy explanation, or evidence only when more depth is wanted.
+
+Recruiter scan path:
+
+`허용 1건 → 발급 기록 10건 → 중복 발급 발생 → DB UNIQUE 적용 후 1건`
+
+The Duplicate problem summary owns the failure definition. The two comparison cards own the strategy outcomes. Disclosures own technical depth.
 
 ## 5. Landing Section
 
@@ -166,14 +188,12 @@ Coupon Overselling:
 
 Duplicate Coupon Issuance:
 
-- Baseline:
-  - `트랜잭션만 적용` / `Transaction Only`
-- Database strategies:
-  - `DB 유니크 제약조건` / `Database Unique Constraint`
-- Redis strategies:
-  - `Redis Lua 스크립트` / `Redis Lua Script`
-
-Duplicate Coupon Issuance may use its separately approved presentation. The Coupon Overselling decision must not be treated as approval for a selector, chart, or dynamic summary in another experiment.
+- Do not use a strategy selector or strategy tabs.
+- Show both database strategies together as always-visible comparison cards:
+  - `트랜잭션만 적용`
+  - `DB 유니크 제약조건`
+- Keep Redis Lua in the separately planned Redis front-line gate section.
+- Do not hide the comparison behind interaction.
 
 Baseline labels should be framed as failure-reproduction configurations, not obsolete code.
 
@@ -192,7 +212,7 @@ Standard strategy labels:
 Terminology rules:
 
 - Korean is the primary visible label.
-- Point and Coupon comparison cards use Korean strategy names only.
+- Point, Coupon, and Duplicate comparison cards use Korean strategy names only.
 - In explanatory content, include the English term on first occurrence where helpful.
 - Use the same terminology across cards, explanations, and evidence sections.
 - Do not introduce alternative Korean names without a documented reason.
@@ -228,7 +248,10 @@ Duplicate Coupon Issuance:
 - `동시 요청 100`
 - `같은 사용자`
 - `같은 쿠폰`
-- `조건: UNIQUE 제약 적용 전` for the transaction-only failure scenario
+- `허용 발급 1건`
+- Place failure reproduction context below the numeric conditions:
+  - `DB UNIQUE 적용 전 · Retry 없음 · 애플리케이션 중복 확인`
+- Coupon stock is recorded setup context only. Do not present Phase 6 as a stock-control comparison.
 
 Expandable test environment:
 
@@ -341,13 +364,13 @@ Coupon ownership:
 - The four comparison cards own strategy-specific outcomes.
 - No strategy selection updates a separate result area.
 
-Duplicate Issuance fields:
+Duplicate Coupon Issuance also does not use a separate dynamic expected-vs-actual summary.
 
-- Expected issuance count per user.
-- Observed issuance count for the same user and coupon.
-- Conclusion:
-  - `중복 발급 발생`
-  - or `중복 발급 방지`
+Duplicate ownership:
+
+- The compact problem summary establishes the allowed maximum `1건`, recorded result `10건`, and `중복 발급 발생`.
+- The two comparison cards own the transaction-only and DB UNIQUE outcomes.
+- No strategy selection updates a separate result area.
 
 Do not repeat every supporting count in the primary view. Success/failure counts and optimistic-lock variability belong in collapsed details.
 
@@ -402,16 +425,16 @@ Coupon Overselling strategy comparison cards:
 | Optimistic-lock note | Treat the recorded `100건` as a documented observed example in collapsed technical detail |
 | Non-goal | No grouped bar chart, strategy selector, playback, or dynamic result summary |
 
-Duplicate Coupon Issuance chart:
+Duplicate Coupon Issuance strategy comparison cards:
 
 | Item | Recommendation |
 | --- | --- |
-| Chart type | Bar chart |
-| Primary y-axis | Issued count for same user-coupon pair |
-| x-axis | 트랜잭션만 적용, DB 유니크 제약조건 |
-| Annotation | Expected maximum `1` |
-| Tooltip | successCount, failCount, scenario condition |
-| Caveat | Unique constraint protects duplicate issuance, not total stock |
+| Card content | strategy name, user-coupon issued-record outcome, plain-language status, one short explanation |
+| Layout | Two always-visible cards; two columns on desktop and one column on mobile |
+| Transaction Only | `중복 발급 발생`, `발급 기록 10건` |
+| DB Unique Constraint | `중복 발급 방지`, `발급 기록 1건` |
+| Boundary | DB UNIQUE protects `(user_id, coupon_id)` uniqueness; it is not stock control |
+| Non-goal | No playback, chart, strategy selector, dynamic summary, Redis content, or stock-control comparison |
 
 Redis chart context:
 
@@ -423,7 +446,7 @@ Redis chart context:
 
 ## 12. Strategy Explanation
 
-Point and Coupon strategy explanations should remain in one compact disclosure below the comparison cards.
+Point, Coupon, and Duplicate strategy explanations should remain in one compact disclosure below the comparison cards.
 
 Use two concise lines per strategy:
 
@@ -443,6 +466,15 @@ Point examples:
   - `단순한 수량 제어에 효과적이다.`
 
 Coupon should adapt the same compact pattern to stock control. Do not restore separate `보장`, `한계`, or `적합한 경우` headings. Avoid long report-style paragraphs and do not claim universal performance superiority.
+
+Duplicate should use the same two-line pattern:
+
+- 트랜잭션만 적용:
+  - `여러 요청이 첫 저장 전에 중복 확인을 통과할 수 있다.`
+  - `애플리케이션 조회만으로 최종 유일성을 보장할 수 없다.`
+- DB 유니크 제약조건:
+  - `같은 사용자-쿠폰 조합의 두 번째 저장을 DB가 거부한다.`
+  - `중복 발급을 막지만 전체 쿠폰 재고를 제어하지는 않는다.`
 
 ## 13. Technical Detail Boundaries
 
@@ -517,6 +549,7 @@ Component ownership:
 | Problem summary | Concise explanation of the selected failure |
 | Point comparison cards | All Point strategy-specific outcomes and plain-language statuses |
 | Coupon comparison cards | All Coupon database-strategy outcomes and plain-language statuses |
+| Duplicate comparison cards | Transaction-only and DB UNIQUE outcomes for the user-coupon uniqueness invariant |
 | Expandable details | Secondary counts such as successCount, failCount, Redis count, issued-user set size |
 | Strategy explanation | Concise mechanism and most important trade-off |
 | Redis section | Redis/PostgreSQL boundary and Redis admission control |
@@ -527,6 +560,7 @@ Avoid repeating:
 
 - The same Point outcome in a separate summary and comparison card.
 - The same Coupon outcome in a separate dynamic summary and comparison card.
+- The same Duplicate outcome in a separate dynamic summary and comparison card.
 - Request counts outside cards when they are already available in conditions.
 - Full environment metadata in the primary experiment area.
 - Redis/PostgreSQL boundary explanation in every Redis tooltip; show it once clearly in the Redis section.
@@ -534,13 +568,14 @@ Avoid repeating:
 - The full Point scenario context in every card; keep it in the collapsed conditions disclosure.
 - Calculated diagnostic values such as `expectedBalanceBySuccessCount` in the recruiter-facing view.
 
-Point and Coupon problem summaries should stay concise. Their comparison cards own only the high-signal outcomes; technical interpretation belongs in collapsed details.
+Point, Coupon, and Duplicate problem summaries should stay concise. Their comparison cards own only the high-signal outcomes; technical interpretation belongs in collapsed details.
 
 ## 17. Responsive Design
 
 Desktop:
 
 - Use a compact card grid that keeps all four Point outcomes visible together.
+- Keep all four Coupon outcomes and both Duplicate outcomes visible together.
 - Keep the three experiment tabs visible near the top.
 - Evidence appears as a collapsed section with a clear `근거 자료 보기` control.
 
@@ -553,8 +588,10 @@ Mobile:
 
 - Point order: title/message, experiment tabs, problem summary, playback, four comparison cards, collapsed details.
 - Coupon order: title/message, experiment tabs, problem summary, four comparison cards, collapsed details.
+- Duplicate order: title/message, experiment tabs, problem summary, two comparison cards, collapsed details.
 - The Point problem and strategy outcomes must be readable without horizontal scrolling.
 - The Coupon problem and strategy outcomes must be readable without horizontal scrolling.
+- The Duplicate problem and strategy outcomes must be readable without horizontal scrolling.
 - Experiment selector can scroll horizontally if touch targets remain large.
 - Comparison cards should fit the viewport; use horizontal scroll only as a last resort and never for the primary conclusion.
 - Evidence links must have comfortable touch targets.
@@ -612,6 +649,7 @@ Expected states:
 | Experiment selected | Selected experiment content replaces the Point section |
 | Point details closed | Conditions, technical explanation, static-data limitation, and evidence remain collapsed |
 | Coupon details closed | Conditions, strategy explanation, static-data limitation, and evidence remain collapsed |
+| Duplicate details closed | Conditions, strategy explanation, static-data limitation, and evidence remain collapsed |
 | Playback running | The stage sequence progresses automatically; stage badges remain non-interactive |
 | Completed | The result remains visible; stage badges become selectable and `↻ 다시 보기` preserves replay behavior |
 | Reduced-motion mode | Timed progression is skipped and the explanatory stages are exposed immediately |
@@ -641,10 +679,14 @@ Because the app uses static verified data, network loading should not be emphasi
 - The Point comparison section uses plain-language statuses rather than `불변식` as its primary recruiter-facing label.
 - Coupon Overselling uses a compact problem summary and four always-visible database strategy cards.
 - Coupon Overselling uses no playback, strategy selector, grouped bar chart, or dynamic summary.
+- Duplicate Coupon Issuance communicates `허용 1건 → 발급 기록 10건 → 중복 발급 발생 → DB UNIQUE 적용 후 1건` within a few seconds.
+- Duplicate Coupon Issuance uses a compact problem summary and two always-visible comparison cards.
+- Duplicate Coupon Issuance uses no playback, chart, strategy selector, dynamic summary, Redis content, or stock-control comparison.
+- DB UNIQUE is described as protection for the user-coupon uniqueness invariant, not as stock control.
 - Technical conditions, limitations, and evidence remain available through collapsed details.
 
 ## 22. Open UX Decisions
 
 No blocking UX decisions remain for the MVP implementation roadmap.
 
-Do not reopen settled technical decisions: static Vite app, Vercel deployment, Korean primary UI language, recorded-result visualization, public GitHub evidence links, single-page experiment tabs, Point Lost Update as the default experiment, Duplicate Coupon Issuance in the first public release, explicit Lost Update failure playback, no Coupon playback, always-visible Point and Coupon database strategy cards, collapsed evidence sections, standardized Korean strategy labels, and separate Redis strategy grouping.
+Do not reopen settled technical decisions: static Vite app, Vercel deployment, Korean primary UI language, recorded-result visualization, public GitHub evidence links, single-page experiment tabs, Point Lost Update as the default experiment, Duplicate Coupon Issuance in the first public release, explicit Lost Update failure playback, no Coupon or Duplicate playback, always-visible Point, Coupon, and Duplicate database strategy cards, collapsed evidence sections, standardized Korean strategy labels, and separate Redis strategy grouping.

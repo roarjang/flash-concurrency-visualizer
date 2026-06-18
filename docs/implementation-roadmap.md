@@ -44,6 +44,8 @@ Implementation must follow these settled decisions:
 - Replay, post-completion stage inspection, and reduced-motion support.
 - Coupon Overselling uses no playback, strategy selector, chart, or dynamic result summary.
 - Coupon Overselling uses a compact problem summary, four always-visible database strategy cards, and collapsed disclosures.
+- Duplicate Coupon Issuance uses no playback, strategy selector, chart, or dynamic result summary.
+- Duplicate Coupon Issuance uses a compact problem summary, two always-visible database strategy cards, and collapsed disclosures.
 - Collapsed evidence section on desktop and mobile.
 - Public GitHub evidence links in rendered UI.
 - Local `repositoryPath` values kept as development metadata and never rendered.
@@ -86,6 +88,11 @@ flash-concurrency-visualizer/
         CouponComparisonCards.tsx
         CouponConditions.tsx
         CouponExplanation.tsx
+      duplicate/
+        DuplicateWorkspace.tsx
+        DuplicateComparisonCards.tsx
+        DuplicateConditions.tsx
+        DuplicateExplanation.tsx
       charts/
         StrategyComparisonChart.tsx
         RedisGateChart.tsx
@@ -119,6 +126,7 @@ Architecture guidance:
 - `charts/` isolates Recharts usage and chart text alternatives.
 - `components/point/PointPlayback.tsx` owns the focused Lost Update failure playback and state beginning in Phase 4.
 - `components/coupon/` reuses the recruiter-first card and disclosure pattern without importing Point playback behavior.
+- `components/duplicate/` reuses the finalized Coupon static comparison pattern without playback, charts, selectors, or Redis content.
 - `redis/` keeps Redis front-line gate explanation separate from database strategy comparison.
 
 ## 4. Static Data Model Plan
@@ -166,9 +174,10 @@ Shared components:
 - Compact title and one-line Korean message.
 - Experiment tabs.
 - Experiment condition display.
-- Compact Point and Coupon problem summaries.
+- Compact Point, Coupon, and Duplicate problem summaries.
 - Point comparison cards.
 - Coupon comparison cards.
+- Duplicate comparison cards.
 - Chart container and chart text alternative.
 - Compact collapsed strategy explanation.
 - Collapsed evidence disclosure.
@@ -182,6 +191,7 @@ Component ownership should follow the UX duplication rules:
 - Problem summary owns the concise failure definition.
 - Point comparison cards own all Point strategy-specific outcomes.
 - Coupon comparison cards own all Coupon database-strategy outcomes.
+- Duplicate comparison cards own the transaction-only and DB UNIQUE outcomes.
 - Chart owns strategy comparison where a chart is the right fit.
 - Tooltips and expandable details own secondary counts.
 - Strategy explanation owns concise mechanism and trade-off copy.
@@ -607,55 +617,74 @@ Suggested future areas:
 
 ### Goal
 
-Extend the shared system to Duplicate Coupon Issuance for the first public release.
+Extend the finalized Coupon static comparison pattern to Duplicate Coupon Issuance for the first public release.
 
 ### Scope
 
-Duplicate experiment tab content, pre-unique-constraint failure reproduction, database unique constraint strategy, adapted chart, explanation, and evidence links.
+Compact Duplicate problem summary, two always-visible comparison cards, collapsed conditions, collapsed strategy explanation, and collapsed evidence.
 
 ### Files or areas likely to be affected
 
 Suggested future areas:
 
-- `src/components/experiment/ExperimentWorkspace.tsx`
-- `src/components/experiment/ExperimentConditions.tsx`
-- `src/components/experiment/ExpectedActualSummary.tsx`
-- `src/components/charts/StrategyComparisonChart.tsx`
-- `src/data/experiments.ts`
+- `src/App.tsx`
+- `src/components/duplicate/DuplicateWorkspace.tsx`
+- `src/components/duplicate/DuplicateComparisonCards.tsx`
+- `src/components/duplicate/DuplicateConditions.tsx`
+- `src/components/duplicate/DuplicateExplanation.tsx`
+- Shared evidence disclosure only where reuse does not introduce Point- or Coupon-specific wording.
+- `src/index.css`
 
 ### Tasks
 
-- Add Duplicate strategy set:
+- Add a compact problem summary that makes this scan path clear:
+  - Allowed issuance for the same user-coupon pair: `1`.
+  - Recorded issued records: `10`.
+  - `중복 발급 발생`.
+  - DB UNIQUE result: `1`.
+- Show both database strategies together:
   - `트랜잭션만 적용`.
   - `DB 유니크 제약조건`.
-- Display duplicate scenario conditions:
+- Give each card a prominent plain-language status, neutral numeric outcome, and one short explanation:
+  - Transaction Only: `중복 발급 발생`, `발급 기록 10건`.
+  - DB Unique Constraint: `중복 발급 방지`, `발급 기록 1건`.
+- Add collapsed duplicate scenario conditions:
   - Coupon stock `1,000`.
   - Concurrent requests `100`.
   - Same user.
   - Same coupon.
+  - Allowed issuance `1`.
   - Before unique constraint for transaction-only failure reproduction.
-- Show expected-vs-actual summary:
-  - Expected issuance count per user-coupon pair.
-  - Observed issuance count for the same user and coupon.
-  - Duplicate issuance occurred or duplicate prevented.
-- Add duplicate chart using issued count for the same user-coupon pair.
-- Add annotation that the expected maximum is `1`.
-- Explain that the database unique constraint protects duplicate issuance, not total stock.
-- Add collapsed evidence links.
+- Treat coupon stock as recorded setup context only, not as the Phase 6 correctness concern.
+- Add a compact collapsed strategy explanation using two concise lines per strategy.
+- Explain that DB UNIQUE protects `(user_id, coupon_id)` uniqueness and is not stock control.
+- Add collapsed evidence and keep the recorded-data limitation secondary.
+- Keep Redis Lua for the separately planned Redis front-line gate section.
 
 ### Acceptance Criteria
 
 - Duplicate Coupon Issuance is included in the first public release.
 - It appears as the third experiment tab.
+- A reviewer can scan `허용 1건 → 발급 기록 10건 → 중복 발급 발생 → DB UNIQUE 적용 후 1건` within a few seconds.
+- Both database strategy outcomes are visible together.
 - The uniqueness invariant is distinct from Point balance and global stock limits.
-- The unique constraint is not described as a full stock-control strategy.
+- The problem summary, cards, and disclosures have distinct information ownership.
+- Conditions, strategy explanation, static-data limitation, and evidence are collapsed by default.
+- The unique constraint is described as the final database guard for user-coupon uniqueness, not as stock control.
+- Duplicate uses no playback, chart, strategy selector, dynamic summary, or Redis content.
 - Evidence links use public GitHub URLs.
 
 ### Explicit Non-Goals
 
 - Do not defer Duplicate out of the MVP.
 - Do not merge Duplicate into the Overselling explanation.
-- Do not imply unique constraints replace Redis or stock-control strategies.
+- Do not implement playback.
+- Do not add chart visualization.
+- Do not add a strategy selector.
+- Do not add a separate dynamic expected-vs-actual summary.
+- Do not implement Redis content in Phase 6.
+- Do not implement or compare stock-control strategies.
+- Do not imply DB UNIQUE controls total coupon stock.
 
 ### Suggested Commit Boundary
 
@@ -752,6 +781,7 @@ Suggested future areas:
   - four Point strategy cards,
   - collapsed Point details.
 - Verify Coupon layout order: problem summary, four strategy cards, collapsed details.
+- Verify Duplicate layout order: problem summary, two strategy cards, collapsed details.
 - Keep chart labels readable and avoid horizontal scrolling for the primary conclusion.
 - Keep the finalized representative Point request count on mobile.
 - Ensure experiment tabs are keyboard-accessible and expose selected state.
@@ -988,6 +1018,9 @@ MVP completion checklist:
 - Scenario-specific conditions such as before `@Version` or before unique constraint are visible with results.
 - Point and Coupon database strategy outcomes exist in four compact, always-visible cards.
 - Coupon Overselling has no playback, strategy selector, grouped bar chart, or dynamic result summary.
+- Duplicate Coupon Issuance has a compact problem summary and two always-visible database strategy cards.
+- Duplicate Coupon Issuance has no playback, strategy selector, chart, dynamic result summary, or Redis content.
+- DB UNIQUE is presented as a user-coupon uniqueness guard, not as stock control.
 - Optimistic-lock observed examples are labeled correctly.
 - Redis Counter and Redis Lua appear in a separate Redis front-line gate section.
 - Redis is not presented as PostgreSQL durability or as a distributed transaction.
@@ -1034,6 +1067,7 @@ These items are not part of the MVP phases unless separately approved:
 | Duplicated information causes drift | Keep problem summaries, comparison cards, and disclosures responsible for distinct information. |
 | Scope grows too large before a usable slice exists | Reuse the finalized Point card pattern for Coupon and avoid adding interaction without explanatory value. |
 | Coupon becomes report-like | Keep all four outcomes visible and omit playback, selectors, charts, and dynamic summaries in Phase 5. |
+| Duplicate becomes report-like | Keep both outcomes visible and omit playback, selectors, charts, dynamic summaries, Redis, and stock-control concerns in Phase 6. |
 | Optimistic-lock example counts look deterministic | Keep scheduling and no-retry variability in collapsed technical detail. |
 | Redis and PostgreSQL responsibilities are conflated | Implement Redis as a separate Phase 7 section with boundary copy and separate visual context. |
 | Mobile chart readability is poor | Address any separately approved chart labels and alternatives in Phase 8 before deployment. |
