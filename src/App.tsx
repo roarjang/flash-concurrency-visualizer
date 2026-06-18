@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ExperimentTabs } from './app/ExperimentTabs.tsx'
+import { CouponWorkspace } from './components/coupon/CouponWorkspace.tsx'
 import { PointWorkspace } from './components/point/PointWorkspace.tsx'
 import { experiments } from './data/experiments.ts'
 import type { ExperimentId } from './types/experiment.ts'
@@ -55,6 +56,8 @@ function App() {
           >
             {selectedExperiment.id === 'point-lost-update' ? (
               <PointWorkspace experiment={selectedExperiment} />
+            ) : selectedExperiment.id === 'coupon-overselling' ? (
+              <CouponWorkspace experiment={selectedExperiment} />
             ) : (
               <div className="selection-placeholder" aria-live="polite">
                 <p className="selection-placeholder__label">현재 선택</p>
