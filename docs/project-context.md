@@ -169,13 +169,15 @@ The planned Point interaction model is:
 2. Read one compact problem definition.
 3. Compare all four strategy outcomes together without a strategy selector.
 4. Open conditions, technical explanation, static-data limitation, or evidence only when wanted.
-5. Beginning in Phase 4, optionally play the transaction-only Lost Update failure explanation.
+5. Beginning in Phase 4, optionally play a conceptual, stage-based Lost Update failure explanation that uses a small representative set of requests and advances automatically after an explicit start.
 
 Point does not use a separate selected-strategy result summary or a chart-based comparison. Later experiments may use strategy selection, summaries, and charts where their approved designs benefit from them.
 
-Phase 4 playback explains why the transaction-only Lost Update failure occurred: requests read the same initial balance, calculate independently, and later writes overwrite earlier deductions before the recorded inconsistent balance appears. It is not a benchmark, live load test, performance visualization, or strategy-comparison animation.
+Phase 4 playback explains why the transaction-only Lost Update failure occurred: representative requests read the same initial balance, calculate independently, and later writes overwrite earlier deductions before the recorded inconsistent balance appears. It is a conceptual explanation, not a literal replay of all 15 concurrent requests, and it progresses automatically through visible stages once started. It is not a benchmark, live load test, performance visualization, or strategy-comparison animation.
 
 Playback owns the failure mechanism. The four static strategy cards own solution differences and recorded outcomes. Phase 4 must not add separate pessimistic-lock, optimistic-lock, or atomic-update playback, replay every experiment record, or animate coupon, duplicate-issuance, or Redis strategies.
+
+Playback remains out of scope for next-step navigation, pause/resume controls, and speed controls.
 
 ## 8. Initial Scope
 

@@ -40,7 +40,7 @@ Implementation must follow these settled decisions:
 - Single-page experiment tabs.
 - Point Lost Update selected by default.
 - Duplicate Coupon Issuance included in the first public release.
-- Explicit Point failure-playback action, no autoplay.
+- Explicit Point failure-playback action; no autoplay on page load, automatic progression once started.
 - Replay, skip, and reduced-motion support.
 - Collapsed evidence section on desktop and mobile.
 - Public GitHub evidence links in rendered UI.
@@ -449,7 +449,7 @@ Add one focused playback that explains why the transaction-only Lost Update fail
 
 ### Scope
 
-A working playback state machine, explicit play control, replay, skip, reduced-motion behavior, and the recorded Lost Update overwrite story.
+A working playback state machine, explicit play control, automatic progression through visible stages, replay, skip, reduced-motion behavior, and the recorded Lost Update overwrite story.
 
 Phase boundary:
 
@@ -458,6 +458,7 @@ Phase boundary:
 - Do not add a large request-flow area before the experience is functional.
 - Playback owns the failure mechanism only. The static strategy cards continue to own strategy differences and outcomes.
 - This phase is not a benchmark, live load test, performance visualization, or strategy-comparison animation.
+- The playback is conceptual, not a literal replay of all 15 concurrent requests.
 
 ### Files or areas likely to be affected
 
@@ -473,13 +474,14 @@ Suggested future areas:
 
 - Implement the playback story:
   - show the initial balance.
-  - show representative concurrent requests reading the same balance.
+  - show representative requests, such as A and B, reading the same balance.
   - show each request calculating a new balance.
   - show competing writes.
   - show later writes overwriting earlier deductions.
   - show the recorded inconsistent final balance.
   - transition attention to the unchanged strategy comparison cards.
-- Use 8 to 12 representative request nodes.
+- Organize the sequence into visible stages such as concurrent read, independent calculation, competing writes, overwrite, result, and transition.
+- Use a small representative number of visual nodes rather than all 15 requests.
 - Add explicit play button with Korean label such as `기록된 요청 흐름 재생`.
 - Add replay and skip controls.
 - Respect `prefers-reduced-motion` by skipping or heavily simplifying motion.
@@ -487,12 +489,13 @@ Suggested future areas:
 - Reset playback to idle when the experiment changes.
 - Keep all four strategy cards static during playback; do not animate strategies, update a chart, or create/update a selected-strategy summary.
 - Add copy explaining that playback simplifies one recorded failure and does not run Java concurrency tests.
+- Do not add next-step navigation, pause/resume controls, or speed controls.
 - Implement with React state and CSS transitions if sufficient.
 - Avoid a heavy animation library unless later implementation proves CSS transitions are inadequate.
 
 ### Acceptance Criteria
 
-- Playback does not autoplay.
+- Playback does not autoplay on page load.
 - Result remains understandable when playback is never started.
 - The playback earns its page space by explaining the Lost Update failure mechanism; it is not a decorative placeholder.
 - Playback makes the stale-read/competing-write/overwrite sequence understandable.
@@ -502,7 +505,7 @@ Suggested future areas:
 - Replay restarts the sequence.
 - Reduced-motion mode avoids unnecessary motion.
 - No visual timing is presented as a benchmark.
-- Representative nodes do not imply one node per actual request.
+- Representative nodes do not imply one node per actual request, and the playback does not replay all 15 requests one by one.
 
 ### Explicit Non-Goals
 
@@ -511,7 +514,8 @@ Suggested future areas:
 - Do not add a heavy animation dependency without a documented reason.
 - Do not implement strategy-specific animations.
 - Do not implement separate pessimistic-lock, optimistic-lock, or atomic-update playback.
-- Do not replay every experiment record.
+- Do not replay every experiment record or every recorded request.
+- Do not add next-step navigation, pause/resume controls, or speed controls.
 - Do not implement coupon, duplicate-issuance, or Redis playback.
 - Do not add a Point strategy selector to control playback.
 

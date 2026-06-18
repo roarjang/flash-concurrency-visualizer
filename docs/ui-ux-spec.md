@@ -243,7 +243,8 @@ Point Phase 3 direction:
 Purpose:
 
 - Explain why the transaction-only Lost Update failure occurred.
-- Make shared reads, calculated balances, and overwritten writes visible without implying live execution.
+- Present a conceptual, stage-based playback that uses a small representative set of requests, such as A and B, to explain the Lost Update mechanism.
+- Make shared reads, calculated balances, competing writes, and overwritten writes visible without implying live execution.
 - Lead the viewer from the failure mechanism to the existing strategy comparison cards.
 
 The playback is not a benchmark, live load test, performance visualization, or strategy-comparison animation.
@@ -260,24 +261,23 @@ Playback story:
 
 | Stage | Meaning |
 | --- | --- |
-| initial balance | Show the recorded starting balance |
-| concurrent read | Representative requests read the same balance |
-| calculate | Each request calculates its own new balance |
-| competing writes | Requests write their calculated values |
-| overwrite | Later writes overwrite earlier deductions |
-| inconsistent result | Show the recorded inconsistent final balance |
-| transition | Direct attention to the static strategy comparison cards |
+| Concurrent Read | Representative requests read the same balance |
+| Independent Calculation | Each request calculates its own new balance |
+| Competing Writes | Requests write their calculated values |
+| Overwrite | Later writes overwrite earlier deductions |
+| Result | Show the recorded inconsistent final balance |
+| Transition | Direct attention to the static strategy comparison cards |
 
 Playback requirements:
 
-- Use a small representative number of visual nodes, around 8 to 12.
-- Never draw 100 or 1,000 individual nodes.
+- Use a small representative number of visual nodes, such as A and B or a similarly small set.
+- Never draw all 15 individual requests as separate animated nodes.
 - Actual recorded counts must remain in the comparison cards or collapsed details.
 - Recommended duration: 1.8 to 2.8 seconds.
-- Do not autoplay.
+- Do not autoplay on page load.
 - Initial page load should display the compact Point problem and all four cards without motion.
 - Start animation only through an explicit user action such as `기록된 요청 흐름 재생`.
-- Provide `Replay` and `Skip` controls.
+- Once started, the playback progresses automatically through the visible stages.
 - Respect `prefers-reduced-motion`: skip animation by default and show the completed state.
 - The Point problem and strategy outcomes must remain understandable even if the playback is never started.
 - Playback must not block access to the comparison cards.
@@ -293,6 +293,9 @@ Responsibility boundary:
 
 Out of scope:
 
+- Next-step navigation between stages.
+- Pause and resume controls.
+- Speed controls.
 - Strategy-specific animations.
 - Separate pessimistic-lock, optimistic-lock, or atomic-update playback.
 - Replaying every experiment record.
@@ -604,7 +607,7 @@ Expected states:
 | Initial state | Point Lost Update selected; compact problem definition and all four cards visible |
 | Experiment selected | Selected experiment content replaces the Point section |
 | Point details closed | Conditions, technical explanation, static-data limitation, and evidence remain collapsed |
-| Playback running | Replay/skip controls are visible; experiment switching stops playback and resets it |
+| Playback running | Replay/skip controls are visible; the stage sequence progresses automatically; experiment switching stops playback and resets it |
 | Playback skipped | The completed failure state appears immediately; comparison cards remain available |
 | Completed | Phase 4 playback shows the inconsistent balance and transitions attention to the unchanged comparison cards |
 | Reduced-motion mode | Playback is skipped or heavily simplified by default |
@@ -620,7 +623,7 @@ Because the app uses static verified data, network loading should not be emphasi
 - Duplicate Coupon Issuance is included in the first public release as the third experiment tab.
 - The first view communicates the three explored scenarios, the Point Lost Update problem, and all four Point outcomes.
 - Point outcomes are immediately distinguishable without a strategy selector or separate result summary.
-- When Phase 4 playback is introduced, it does not autoplay and the result remains understandable without playing it.
+- When Phase 4 playback is introduced, it does not autoplay on page load and the result remains understandable without playing it.
 - No component unnecessarily repeats the same metrics.
 - Phase 4 playback explains only the Lost Update failure mechanism and does not compare strategies, update charts, or update result summaries.
 - Variable optimistic-lock observations are labeled correctly.
