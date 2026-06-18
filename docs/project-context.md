@@ -107,7 +107,7 @@ Current repository implementation state may be shown as supporting metadata, but
 
 The frontend visualizes recorded experiment results. It must not execute real load tests, database locks, Redis operations, concurrent requests, or Spring backend calls.
 
-The UI must clearly state that animations are simplified visual explanations based on previously recorded backend JUnit tests.
+The UI must clearly state that Phase 4 playback is a simplified explanation based on a previously recorded backend JUnit test.
 
 The recorded-data and no-live-execution limitation should be discoverable in a secondary disclosure or footer. It should not become the hero message or dominate the first-view hierarchy.
 
@@ -169,11 +169,13 @@ The planned Point interaction model is:
 2. Read one compact problem definition.
 3. Compare all four strategy outcomes together without a strategy selector.
 4. Open conditions, technical explanation, static-data limitation, or evidence only when wanted.
-5. Beginning in Phase 4, optionally play a working request-flow explanation.
+5. Beginning in Phase 4, optionally play the transaction-only Lost Update failure explanation.
 
 Point does not use a separate selected-strategy result summary or a chart-based comparison. Later experiments may use strategy selection, summaries, and charts where their approved designs benefit from them.
 
-The Phase 4 animation is explanatory only. It must make a real concurrency cause easier to understand, such as overlapping reads, competing writes, and an overwritten deduction. It must not be a static placeholder, imply live concurrent database requests, or update charts or result summaries.
+Phase 4 playback explains why the transaction-only Lost Update failure occurred: requests read the same initial balance, calculate independently, and later writes overwrite earlier deductions before the recorded inconsistent balance appears. It is not a benchmark, live load test, performance visualization, or strategy-comparison animation.
+
+Playback owns the failure mechanism. The four static strategy cards own solution differences and recorded outcomes. Phase 4 must not add separate pessimistic-lock, optimistic-lock, or atomic-update playback, replay every experiment record, or animate coupon, duplicate-issuance, or Redis strategies.
 
 ## 8. Initial Scope
 
@@ -304,7 +306,7 @@ The first visualizer version should satisfy these criteria:
 - Scenario-specific conditions such as `before @Version` or `before unique constraint` remain available with the result context.
 - Strategy trade-offs are understandable without reading all backend documents first.
 - The UI does not imply live backend execution.
-- Phase 4 playback, when introduced, is meaningful, optional, and does not misrepresent guarantees or failure modes.
+- Phase 4 playback, when introduced, clearly explains the Lost Update overwrite sequence and then returns attention to the static strategy cards.
 - The recorded-data limitation remains discoverable as secondary information without dominating the hero.
 - The application works on desktop and mobile.
 - The application can be built with `npm run build` and deployed as static `dist` output on Vercel.
@@ -411,5 +413,6 @@ Risks:
 - Point Lost Update uses a recruiter-first compact problem definition and four always-visible strategy cards.
 - Point Lost Update does not use a chart-based comparison, a strategy selector, or a separate dynamic result summary.
 - Point Phase 3 contains no request-flow placeholder; Phase 4 adds the area only with meaningful working playback.
-- Point Phase 4 playback does not update charts, card outcomes, or result summaries.
+- Point Phase 4 playback explains only the transaction-only failure mechanism; strategy cards continue to explain the solutions.
+- Point Phase 4 does not add strategy-specific playback, replay every experiment record, or visualize performance.
 - The static recorded-data limitation belongs in secondary disclosure or footer content, not the hero.

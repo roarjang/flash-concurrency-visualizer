@@ -13,7 +13,7 @@ Primary reviewer journey:
 3. Understand the Point problem through one concise definition.
 4. Compare all four Point strategy outcomes together without selecting a strategy.
 5. Open conditions, technical explanation, the static-data limitation, or evidence only when more depth is wanted.
-6. In Phase 4, optionally play a meaningful request-flow explanation without changing the already-visible card outcomes.
+6. In Phase 4, optionally play the Lost Update failure explanation without changing the already-visible card outcomes.
 
 Later coupon experiments may use strategy selection and expected-vs-actual summaries where their separately approved designs require them.
 
@@ -163,9 +163,7 @@ Presentation for coupon experiments:
 - Use grouped segmented controls or grouped button rows: `Baseline`, `Database`, `Redis`.
 - Keep the selected strategy visually prominent.
 - Avoid a crowded single row when many strategies exist. On mobile, groups can stack vertically.
-- Switching strategies should update conditions, animation state, summary, explanation, chart highlight, and evidence links where a later experiment uses strategy selection.
-- Switching strategies during playback should stop the current animation, load the new strategy state, and show a `재생` action rather than continuing mismatched animation.
-- Do not make the user replay animation every time they switch strategies. Stable setup, summary, chart, and explanation should remain available without animation playback.
+- Switching strategies should update conditions, summary, explanation, chart highlight, and evidence links where a later experiment uses strategy selection.
 
 Baseline labels should be framed as failure-reproduction configurations, not obsolete code.
 
@@ -234,19 +232,21 @@ Expandable test environment:
 
 Do not display all environment metadata in the primary condition area.
 
-## 9. Recorded Request Animation
+## 9. Point Lost Update Failure Playback
 
 Point Phase 3 direction:
 
 - Do not render a static request-flow placeholder.
 - Do not reserve a large empty request-flow area.
-- The request-flow area returns in Phase 4 only when it provides a meaningful short animation or playback experience.
+- The request-flow area returns in Phase 4 only with a working Lost Update failure playback.
 
 Purpose:
 
-- Explain the request flow conceptually.
-- Make concurrency behavior visible without implying live execution.
-- Add meaningful flow context to the already-visible Point problem and strategy cards.
+- Explain why the transaction-only Lost Update failure occurred.
+- Make shared reads, calculated balances, and overwritten writes visible without implying live execution.
+- Lead the viewer from the failure mechanism to the existing strategy comparison cards.
+
+The playback is not a benchmark, live load test, performance visualization, or strategy-comparison animation.
 
 Required copy near the animation:
 
@@ -256,19 +256,19 @@ Recommended supporting message:
 
 `백엔드 JUnit 동시성 테스트에서 기록된 요청 흐름과 결과를 단순화해 재생합니다.`
 
-Stages:
+Playback story:
 
 | Stage | Meaning |
 | --- | --- |
-| idle | Point problem and cards are visible, ready for explicit playback |
-| ready | Representative request nodes are queued |
-| simultaneous start | Requests begin together |
-| read/check | Requests read balance, stock, duplicate state, or Redis state |
-| update/issue attempt | Requests attempt deduction, stock increment, insert, Redis admission, or Lua script |
-| success/conflict/failure | Nodes split into success, conflict, sold-out, duplicate, or overwritten paths |
-| completed | Playback completes while the Point problem and cards remain visible |
+| initial balance | Show the recorded starting balance |
+| concurrent read | Representative requests read the same balance |
+| calculate | Each request calculates its own new balance |
+| competing writes | Requests write their calculated values |
+| overwrite | Later writes overwrite earlier deductions |
+| inconsistent result | Show the recorded inconsistent final balance |
+| transition | Direct attention to the static strategy comparison cards |
 
-Animation requirements:
+Playback requirements:
 
 - Use a small representative number of visual nodes, around 8 to 12.
 - Never draw 100 or 1,000 individual nodes.
@@ -279,28 +279,25 @@ Animation requirements:
 - Start animation only through an explicit user action such as `기록된 요청 흐름 재생`.
 - Provide `Replay` and `Skip` controls.
 - Respect `prefers-reduced-motion`: skip animation by default and show the completed state.
-- The Point problem and strategy outcomes must remain understandable even if the animation is never played.
-- Animation must not block access to the comparison cards.
-- When switching experiments, reset animation to a stable idle state.
+- The Point problem and strategy outcomes must remain understandable even if the playback is never started.
+- Playback must not block access to the comparison cards.
+- When switching experiments, reset playback to a stable idle state.
 - Do not imply that the play button runs a live Java concurrency test.
 - Do not use animation duration or node speed as a performance benchmark.
-- Do not animate lock waiting in a way that implies measured latency unless the value is explicitly documented and labeled.
 
-Strategy-specific animation cues:
+Responsibility boundary:
 
-- Transaction-only lost update: several requests read the same old value, then final persisted value does not match accepted successes.
-- Pessimistic lock: one request enters the locked row at a time.
-- Optimistic lock: conflicts appear at commit/update time.
-- Atomic update: requests hit one conditional update gate.
-- Unique constraint: duplicate insert attempts hit the database invariant.
-- Redis Counter: Redis admits only stock-sized slots before PostgreSQL persistence.
-- Redis Lua: stock and duplicate checks happen atomically inside Redis before PostgreSQL persistence.
+- Playback explains the Lost Update problem and failure mechanism.
+- Strategy cards explain how the four strategies differ and what outcomes they produced.
+- Playback must not animate, update, or replace the strategy cards, a chart, or a selected-strategy summary.
 
-Point Phase 4 minimum:
+Out of scope:
 
-- The working playback must make the transaction-only Lost Update causality understandable: overlapping reads of the same balance, competing writes, and an overwritten deduction.
-- It must not update a chart, create or update a selected-strategy summary, or replace the four card outcomes.
-- Additional strategy cues are optional only if they improve the causal explanation without turning the playback into another strategy selector.
+- Strategy-specific animations.
+- Separate pessimistic-lock, optimistic-lock, or atomic-update playback.
+- Replaying every experiment record.
+- Coupon, duplicate-issuance, or Redis playback.
+- Performance or latency visualization.
 
 ## 10. Expected vs Actual Summary
 
@@ -509,7 +506,7 @@ Component ownership:
 | Experiment selector | Experiment group choice and short problem description |
 | Strategy selector | Relevant strategy choice and grouping for later experiments that use selection |
 | Conditions | Setup: initial balance, stock, requests, user pattern, retry, scenario-specific condition |
-| Animation | Conceptual request flow beginning in Point Phase 4 |
+| Playback | Transaction-only Lost Update failure mechanism beginning in Point Phase 4 |
 | Point problem definition | Concise explanation of the Lost Update problem |
 | Expected/actual summary | Primary correctness conclusion for later experiments where separately approved |
 | Point comparison cards | All Point strategy-specific outcomes and plain-language statuses |
@@ -562,13 +559,13 @@ Requirements:
 - Use semantic headings in page order.
 - Selectors must be keyboard-accessible and expose selected state.
 - Focus states must be visible.
-- Animation controls must be buttons with screen-reader labels.
+- Playback controls must be buttons with screen-reader labels.
 - Evidence expand/collapse controls must be keyboard-accessible and expose expanded/collapsed state.
 - Provide chart text alternatives where charts are used, and concise card alternatives for Point Lost Update.
 - Do not communicate success or failure by color alone.
 - Ensure sufficient contrast for text, chart labels, and status indicators.
 - Respect reduced-motion preferences.
-- Provide a skip control for animations.
+- Provide a skip control for the Phase 4 playback.
 - Keep evidence links descriptive; avoid multiple identical `View source` labels without context.
 
 For screen readers, the compact Point problem definition should precede the four strategy cards, and each card should announce strategy name, result, and plain-language status before optional mechanism copy.
@@ -607,10 +604,10 @@ Expected states:
 | Initial state | Point Lost Update selected; compact problem definition and all four cards visible |
 | Experiment selected | Selected experiment content replaces the Point section |
 | Point details closed | Conditions, technical explanation, static-data limitation, and evidence remain collapsed |
-| Animation running | In Phase 4, replay/skip controls are visible; experiment switching stops playback and resets it |
-| Animation skipped | Phase 4 completed state appears immediately; comparison cards remain available |
-| Completed | Phase 4 animation completes without hiding the comparison cards |
-| Reduced-motion mode | Animation is skipped or heavily simplified by default |
+| Playback running | Replay/skip controls are visible; experiment switching stops playback and resets it |
+| Playback skipped | The completed failure state appears immediately; comparison cards remain available |
+| Completed | Phase 4 playback shows the inconsistent balance and transitions attention to the unchanged comparison cards |
+| Reduced-motion mode | Playback is skipped or heavily simplified by default |
 | Missing optional evidence | Show available evidence and omit missing link; do not block the experiment |
 | Invalid or incomplete static data | Show a clear fallback such as `검증되지 않은 데이터` and avoid rendering invented values |
 
@@ -625,7 +622,7 @@ Because the app uses static verified data, network loading should not be emphasi
 - Point outcomes are immediately distinguishable without a strategy selector or separate result summary.
 - When Phase 4 playback is introduced, it does not autoplay and the result remains understandable without playing it.
 - No component unnecessarily repeats the same metrics.
-- Phase 4 playback is clearly representational and does not update charts or result summaries.
+- Phase 4 playback explains only the Lost Update failure mechanism and does not compare strategies, update charts, or update result summaries.
 - Variable optimistic-lock observations are labeled correctly.
 - Redis and PostgreSQL responsibilities are not conflated.
 - Evidence links are discoverable through a collapsed section without dominating the page.
@@ -641,4 +638,4 @@ Because the app uses static verified data, network loading should not be emphasi
 
 No blocking UX decisions remain for the MVP implementation roadmap.
 
-Do not reopen settled technical decisions: static Vite app, Vercel deployment, Recharts for charts, Korean primary UI language, recorded-result visualization, public GitHub evidence links, single-page experiment tabs, Point Lost Update as the default experiment, Duplicate Coupon Issuance in the first public release, explicit animation playback, collapsed evidence sections, standardized Korean strategy labels, and separate Redis strategy grouping.
+Do not reopen settled technical decisions: static Vite app, Vercel deployment, Recharts for charts, Korean primary UI language, recorded-result visualization, public GitHub evidence links, single-page experiment tabs, Point Lost Update as the default experiment, Duplicate Coupon Issuance in the first public release, explicit Lost Update failure playback, collapsed evidence sections, standardized Korean strategy labels, and separate Redis strategy grouping.

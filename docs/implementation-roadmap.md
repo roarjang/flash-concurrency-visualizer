@@ -40,7 +40,7 @@ Implementation must follow these settled decisions:
 - Single-page experiment tabs.
 - Point Lost Update selected by default.
 - Duplicate Coupon Issuance included in the first public release.
-- Explicit animation play action, no autoplay.
+- Explicit Point failure-playback action, no autoplay.
 - Replay, skip, and reduced-motion support.
 - Collapsed evidence section on desktop and mobile.
 - Public GitHub evidence links in rendered UI.
@@ -114,7 +114,7 @@ Architecture guidance:
 - `types/` defines the contract between data and UI.
 - `components/experiment/` owns the shared explanation structure.
 - `charts/` isolates Recharts usage and chart text alternatives.
-- `animation/` owns working request-flow playback and state beginning in Phase 4; Phase 3 does not render an animation shell or placeholder.
+- `animation/` owns the focused Lost Update failure playback and state beginning in Phase 4; Phase 3 does not render an animation shell or placeholder.
 - `redis/` keeps Redis front-line gate explanation separate from database strategy comparison.
 
 ## 4. Static Data Model Plan
@@ -171,12 +171,12 @@ Shared components:
 - Guarantee, limitation, and use-case panel.
 - Collapsed evidence disclosure.
 - Responsive layout shell.
-- Working request-flow playback introduced only in approved animation phases.
+- Focused Lost Update failure playback introduced in Phase 4.
 
 Component ownership should follow the UX duplication rules:
 
 - Conditions own setup values.
-- Animation owns conceptual request flow beginning in Point Phase 4.
+- Playback owns the transaction-only Lost Update failure mechanism beginning in Point Phase 4.
 - Summary owns the primary correctness conclusion only where a later experiment design requires it.
 - Point problem definition owns the concise Lost Update explanation.
 - Point comparison cards own all Point strategy-specific outcomes.
@@ -332,7 +332,7 @@ Suggested future areas:
 - Switch experiment content without route navigation.
 - Do not create Point strategy-selection state; all four Point outcomes will be shown together in Phase 3.
 - Allow later coupon experiments to add selected-strategy state within their own approved phases.
-- Do not create Point animation state or reserve request-flow layout in Phase 2.
+- Do not create Point playback state or reserve request-flow layout in Phase 2.
 - Keep state URL-independent for the MVP.
 - Keep internal data and component boundaries route-compatible for a future extension without adding routing.
 
@@ -441,22 +441,23 @@ Suggested future areas:
 
 `feat: implement point lost update static slice`
 
-## 10. Phase 4: Point Request-Flow Animation
+## 10. Phase 4: Point Lost Update Failure Playback
 
 ### Goal
 
-Return the request-flow area only when it provides a representative, optional, meaningful playback experience.
+Add one focused playback that explains why the transaction-only Lost Update failure occurred.
 
 ### Scope
 
-A working animation state machine, explicit play control, replay, skip, reduced-motion behavior, and a causally meaningful Point Lost Update sequence.
+A working playback state machine, explicit play control, replay, skip, reduced-motion behavior, and the recorded Lost Update overwrite story.
 
 Phase boundary:
 
 - Phase 3 contains no static request-flow placeholder.
-- Phase 4 introduces the request-flow area together with the working animation and playback controls.
+- Phase 4 introduces the request-flow area together with the working failure playback and controls.
 - Do not add a large request-flow area before the experience is functional.
-- Playback supplements the static Point explanation; it does not own or dynamically update card outcomes, charts, or a result summary.
+- Playback owns the failure mechanism only. The static strategy cards continue to own strategy differences and outcomes.
+- This phase is not a benchmark, live load test, performance visualization, or strategy-comparison animation.
 
 ### Files or areas likely to be affected
 
@@ -470,32 +471,32 @@ Suggested future areas:
 
 ### Tasks
 
-- Implement stages:
-  - idle.
-  - ready.
-  - simultaneous start.
-  - read/check.
-  - update attempt.
-  - conflict/failure/success.
-  - completed.
+- Implement the playback story:
+  - show the initial balance.
+  - show representative concurrent requests reading the same balance.
+  - show each request calculating a new balance.
+  - show competing writes.
+  - show later writes overwriting earlier deductions.
+  - show the recorded inconsistent final balance.
+  - transition attention to the unchanged strategy comparison cards.
 - Use 8 to 12 representative request nodes.
-- Show the transaction-only Lost Update cause clearly: overlapping reads of the same balance, competing writes, and an overwritten deduction.
 - Add explicit play button with Korean label such as `기록된 요청 흐름 재생`.
 - Add replay and skip controls.
 - Respect `prefers-reduced-motion` by skipping or heavily simplifying motion.
 - Keep the compact Point problem definition, comparison cards, and collapsed details accessible before playback.
-- Reset animation to idle when the experiment changes.
-- Keep all four strategy cards static during playback; do not update a chart or create/update a selected-strategy summary when animation stages change.
-- Add copy explaining that the animation replays simplified recorded results and does not run Java concurrency tests.
+- Reset playback to idle when the experiment changes.
+- Keep all four strategy cards static during playback; do not animate strategies, update a chart, or create/update a selected-strategy summary.
+- Add copy explaining that playback simplifies one recorded failure and does not run Java concurrency tests.
 - Implement with React state and CSS transitions if sufficient.
 - Avoid a heavy animation library unless later implementation proves CSS transitions are inadequate.
 
 ### Acceptance Criteria
 
-- Animation does not autoplay.
-- Result remains understandable when animation is never played.
-- The animation earns its page space by explaining concurrency flow; it is not a decorative placeholder.
+- Playback does not autoplay.
+- Result remains understandable when playback is never started.
+- The playback earns its page space by explaining the Lost Update failure mechanism; it is not a decorative placeholder.
 - Playback makes the stale-read/competing-write/overwrite sequence understandable.
+- Playback ends by directing attention to the static strategy cards rather than animating a solution.
 - Playback completion does not alter the four card outcomes or reveal a separate dynamic result panel.
 - Skip immediately reaches completed visual state.
 - Replay restarts the sequence.
@@ -508,12 +509,15 @@ Suggested future areas:
 - Do not animate all 15 Point requests individually.
 - Do not introduce real timers as performance evidence.
 - Do not add a heavy animation dependency without a documented reason.
-- Do not implement coupon-specific animation yet.
-- Do not add a Point strategy selector solely to control playback.
+- Do not implement strategy-specific animations.
+- Do not implement separate pessimistic-lock, optimistic-lock, or atomic-update playback.
+- Do not replay every experiment record.
+- Do not implement coupon, duplicate-issuance, or Redis playback.
+- Do not add a Point strategy selector to control playback.
 
 ### Suggested Commit Boundary
 
-`feat: add point request flow animation`
+`feat: add point lost update failure playback`
 
 ## 11. Phase 5: Point Comparison Card and Content Validation
 
@@ -575,7 +579,7 @@ Extend the validated Point system to Coupon Overselling.
 
 ### Scope
 
-Overselling experiment tab content, database strategies, stock conditions, expected-vs-actual summary, comparison chart, adapted animation, explanations, and evidence links.
+Overselling experiment tab content, database strategies, stock conditions, expected-vs-actual summary, comparison chart, explanations, and evidence links.
 
 ### Files or areas likely to be affected
 
@@ -585,7 +589,6 @@ Suggested future areas:
 - `src/components/experiment/ExperimentConditions.tsx`
 - `src/components/experiment/ExpectedActualSummary.tsx`
 - `src/components/charts/StrategyComparisonChart.tsx`
-- `src/components/animation/RequestFlowAnimation.tsx`
 - `src/data/experiments.ts`
 
 ### Tasks
@@ -608,7 +611,6 @@ Suggested future areas:
   - Overselling occurred or stock limit preserved.
 - Add grouped bar chart for issued records vs stock limit.
 - Keep Redis Counter and Redis Lua out of the first database comparison chart.
-- Adapt animation cues for stock check, issue attempt, success, sold-out, and overselling.
 - Add cause, mechanism, guarantee, limitation, use case, and collapsed evidence links.
 
 ### Acceptance Criteria
@@ -638,7 +640,7 @@ Extend the shared system to Duplicate Coupon Issuance for the first public relea
 
 ### Scope
 
-Duplicate experiment tab content, pre-unique-constraint failure reproduction, database unique constraint strategy, adapted chart, adapted animation, explanation, and evidence links.
+Duplicate experiment tab content, pre-unique-constraint failure reproduction, database unique constraint strategy, adapted chart, explanation, and evidence links.
 
 ### Files or areas likely to be affected
 
@@ -648,7 +650,6 @@ Suggested future areas:
 - `src/components/experiment/ExperimentConditions.tsx`
 - `src/components/experiment/ExpectedActualSummary.tsx`
 - `src/components/charts/StrategyComparisonChart.tsx`
-- `src/components/animation/RequestFlowAnimation.tsx`
 - `src/data/experiments.ts`
 
 ### Tasks
@@ -668,7 +669,6 @@ Suggested future areas:
   - Duplicate issuance occurred or duplicate prevented.
 - Add duplicate chart using issued count for the same user-coupon pair.
 - Add annotation that the expected maximum is `1`.
-- Adapt animation for concurrent duplicate checks and insert attempts.
 - Explain that the database unique constraint protects duplicate issuance, not total stock.
 - Add collapsed evidence links.
 
@@ -842,7 +842,7 @@ Essential checks:
 - Evidence URL format checks for public GitHub `main` branch links.
 - Experiment switching tests.
 - Strategy switching tests.
-- Animation skip and replay tests.
+- Point playback skip and replay tests.
 - Reduced-motion behavior check.
 - Basic accessibility checks for controls and disclosures.
 - Manual desktop and mobile responsive checks.
@@ -859,9 +859,9 @@ Optional checks:
 - `npm run build` succeeds.
 - TypeScript catches invalid data shape changes.
 - Data validation prevents missing required numeric fields.
-- Switching experiments and strategies does not show stale animation state.
+- Switching experiments does not leave stale Point playback state.
 - Evidence links do not render local repository paths.
-- Animation controls work with keyboard and reduced-motion settings.
+- Point playback controls work with keyboard and reduced-motion settings.
 - No major accessibility issue blocks MVP review.
 
 ### Explicit Non-Goals
@@ -985,7 +985,7 @@ Recommended small commit groups:
 | Experiment data model | `feat: add verified static experiment data model` |
 | Shared application shell | `feat: add single-page experiment navigation` |
 | Point static view | `feat: implement point lost update static slice` |
-| Point animation | `feat: add point request flow animation` |
+| Point failure playback | `feat: add point lost update failure playback` |
 | Point validation | `test: validate point slice content and card behavior` |
 | Overselling support | `feat: add coupon overselling database strategies` |
 | Duplicate support | `feat: add duplicate coupon issuance experiment` |
@@ -1023,8 +1023,8 @@ MVP completion checklist:
 - Optimistic-lock observed examples are labeled correctly.
 - Redis Counter and Redis Lua appear in a separate Redis front-line gate section.
 - Redis is not presented as PostgreSQL durability or as a distributed transaction.
-- Animations are optional, explicit, replayable, skippable, and reduced-motion aware when introduced in their approved phases.
-- The result remains understandable without playing animation.
+- Point failure playback is optional, explicit, replayable, skippable, and reduced-motion aware.
+- The result remains understandable without starting playback.
 - Point Phase 3 contains no static request-flow placeholder.
 - Evidence links are collapsed by default.
 - Evidence links render public GitHub URLs only.
@@ -1062,7 +1062,7 @@ These items are not part of the MVP phases unless separately approved:
 | Risk | Mitigation |
 | --- | --- |
 | Incorrect transcription of recorded values | Complete Phase 1 before UI work and verify every numeric value against `docs/experiment-data.md`. |
-| Animation mistaken for live execution | Use explicit play action, non-live disclaimer, representative nodes, and no benchmark-like timing in Phase 4. |
+| Playback mistaken for live execution | Use explicit play action, non-live disclaimer, representative nodes, and no benchmark-like timing in Phase 4. |
 | Duplicated information causes drift | Follow component ownership rules in Phase 3 and validate duplication in Phase 5. |
 | Scope grows too large before a usable slice exists | Complete Point static slice and validation before Overselling, Duplicate, and Redis phases. |
 | Chart metrics confuse reviewers | Use experiment-specific chart types and avoid forcing incomparable values onto one axis. |
@@ -1078,7 +1078,7 @@ These items are not part of the MVP phases unless separately approved:
 2. Static data contracts.
 3. Shared shell.
 4. Point static slice.
-5. Point animation.
+5. Point Lost Update failure playback.
 6. Point validation.
 7. Overselling.
 8. Duplicate Issuance.
