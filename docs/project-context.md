@@ -171,7 +171,7 @@ The planned interaction model is:
 3. Review the test conditions.
 4. Replay a simplified concurrent-request animation.
 5. See expected values and actual values immediately.
-6. Compare strategies with a chart.
+6. Compare Point strategies through a compact strategy comparison card section.
 7. Read cause, guarantee, limitation, trade-off, and suitable use case.
 8. Open the relevant backend test code or documentation as evidence.
 
@@ -193,6 +193,7 @@ Point Lost Update:
 - Strategy evidence exists for pessimistic lock, optimistic lock without retry, and atomic update.
 - Pessimistic lock and atomic update have deterministic documented results of `successCount = 10`, `failCount = 5`, `finalBalance = 0`.
 - Optimistic lock has a documented observed example of `successCount = 3`, `failCount = 12`, `finalBalance = 7000`, with `ObjectOptimisticLockingFailureException`; exact success count may vary.
+- The Point visual presentation should use strategy comparison cards instead of a chart-led table so the failure reads quickly on first view.
 
 Coupon Overselling:
 

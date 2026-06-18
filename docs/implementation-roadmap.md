@@ -25,7 +25,7 @@ Shared components should be validated with Point before they are generalized. Av
 Implementation must follow these settled decisions:
 
 - React + TypeScript + Vite.
-- Recharts for strategy comparison charts.
+- Recharts for chart-based comparisons where a chart remains the clearest fit for later experiments.
 - Static local data derived from `docs/experiment-data.md`.
 - No backend API.
 - No serverless functions.
@@ -77,6 +77,8 @@ flash-concurrency-visualizer/
         CauseMechanism.tsx
         TradeoffPanel.tsx
         EvidenceDisclosure.tsx
+      point/
+        PointComparisonCards.tsx
       charts/
         StrategyComparisonChart.tsx
         RedisGateChart.tsx
@@ -132,7 +134,7 @@ Implementation order:
 3. Define scenario condition types for point, stock, duplicate, and Redis records.
 4. Define expected result and observed result shapes.
 5. Define invariant assertions separately from documented observed examples.
-6. Define comparison chart values for database strategy charts.
+6. Define comparison values for Point strategy cards and later database strategy charts.
 7. Define Redis grouping data separately from database strategy comparison data.
 8. Define Korean and English display names.
 9. Define caveat fields, especially for optimistic-lock observed examples.
@@ -151,7 +153,7 @@ Validation principles:
 
 ## 5. Shared UI Foundation
 
-Shared components should support all three experiment groups without forcing every experiment into the same chart or metric shape.
+Shared components should support all three experiment groups without forcing every experiment into the same comparison shape.
 
 Shared components:
 
@@ -161,6 +163,7 @@ Shared components:
 - Strategy selector with Baseline, Database, and Redis groupings.
 - Experiment condition display.
 - Expected-vs-actual summary.
+- Point comparison cards.
 - Chart container and chart text alternative.
 - Cause and mechanism explanation.
 - Guarantee, limitation, and use-case panel.
@@ -173,7 +176,8 @@ Component ownership should follow the UX duplication rules:
 - Conditions own setup values.
 - Animation owns conceptual request flow.
 - Summary owns the primary correctness conclusion.
-- Chart owns strategy comparison.
+- Point comparison cards own the Point strategy comparison hook.
+- Chart owns strategy comparison where a chart is the right fit.
 - Tooltips and expandable details own secondary counts.
 - Explanation owns cause and mechanism.
 - Trade-off panel owns selection criteria.
@@ -355,7 +359,7 @@ Implement the complete static Point Lost Update experience without animation.
 
 ### Scope
 
-Point strategy selector, conditions, expected-vs-actual summary, database comparison chart, cause and mechanism, trade-off panel, and evidence disclosure.
+Point strategy selector, expected-vs-actual summary, compact conditions disclosure, meaning-focused strategy comparison cards, cause and mechanism, trade-off panel, and evidence disclosure.
 
 ### Files or areas likely to be affected
 
@@ -364,7 +368,7 @@ Suggested future areas:
 - `src/components/experiment/ExperimentWorkspace.tsx`
 - `src/components/experiment/ExperimentConditions.tsx`
 - `src/components/experiment/ExpectedActualSummary.tsx`
-- `src/components/charts/StrategyComparisonChart.tsx`
+- `src/components/point/PointComparisonCards.tsx`
 - `src/components/experiment/CauseMechanism.tsx`
 - `src/components/experiment/TradeoffPanel.tsx`
 - `src/components/experiment/EvidenceDisclosure.tsx`
@@ -388,9 +392,12 @@ Suggested future areas:
   - Expected final balance under this scenario.
   - Observed final balance.
   - Lost Update occurred or balance invariant preserved.
-- Add Point database strategy chart using final balance as the primary y-axis.
-- Add chart annotation such as `이 실험 조건의 기대 최종 잔액: 0원`.
-- Put success/failure counts in tooltips or expandable details, not in every component.
+- Add a meaning-focused Point strategy comparison card section instead of a final-balance chart.
+- Each card should show strategy name, expected and recorded result, invariant match, one short mechanism or conclusion, and required caveats.
+- For Optimistic Lock, label the numeric result as one documented observed execution example and keep the no-retry / run-variability caveat visible.
+- Keep supporting success/failure counts available in concise supporting copy or expandable details, but do not make them the primary pattern of the section.
+- Avoid a separate `수치로 보기` table for the Point view.
+- Do not present the Point comparison as a chart-led report.
 - Add cause and mechanism copy.
 - Add guarantee, limitation, and appropriate use case for each strategy.
 - Add collapsed evidence links using public GitHub URLs.
@@ -398,6 +405,7 @@ Suggested future areas:
 ### Acceptance Criteria
 
 - The Point result is understandable without animation.
+- The Point comparison is presented as compact cards rather than a chart/table pair.
 - Expected final balance `0` is always tied to the recorded Point scenario conditions.
 - Transaction-only failure is framed as an intentional failure-reproduction configuration, not obsolete code.
 - Optimistic-lock result is labeled as one documented observed example where counts are variable.
@@ -477,7 +485,7 @@ Suggested future areas:
 
 `feat: add point request flow animation`
 
-## 11. Phase 5: Point Chart and Content Validation
+## 11. Phase 5: Point Comparison Card and Content Validation
 
 ### Goal
 
@@ -485,13 +493,13 @@ Verify the Point slice before copying the architecture to other experiments.
 
 ### Scope
 
-Content review, chart interpretation, mobile check, evidence-link check, and accessibility review for the Point slice.
+Content review, card interpretation, mobile check, evidence-link check, and accessibility review for the Point slice.
 
 ### Files or areas likely to be affected
 
 Suggested future areas:
 
-- `src/components/charts/StrategyComparisonChart.tsx`
+- `src/components/point/PointComparisonCards.tsx`
 - `src/components/experiment/ExpectedActualSummary.tsx`
 - `src/components/experiment/EvidenceDisclosure.tsx`
 - `src/data/experiments.ts`
@@ -499,20 +507,20 @@ Suggested future areas:
 
 ### Tasks
 
-- Validate chart labels and axis text.
+- Validate card labels and section text.
 - Confirm expected-vs-observed distinction.
 - Confirm Point expected balance is always scenario-specific.
 - Confirm optimistic-lock observed-example caveat is visible.
-- Check that success/failure counts are not repeated in summary, chart labels, and paragraph text at the same time.
-- Verify mobile readability for selectors, summary, and chart.
-- Add or refine chart text alternative.
+- Check that success/failure counts are not repeated in summary, card labels, and paragraph text at the same time.
+- Verify mobile readability for selectors, summary, and cards.
+- Add or refine a card text alternative where needed.
 - Verify evidence links open public GitHub URLs.
 - Review technical wording against `docs/project-context.md` and `docs/experiment-data.md`.
 
 ### Acceptance Criteria
 
 - A reviewer can understand Point Lost Update within about ten seconds.
-- Chart and summary do not contradict each other.
+- Card section and summary do not contradict each other.
 - The animation is clearly representational.
 - The page does not imply live backend execution.
 - No local paths appear in rendered UI.
@@ -526,7 +534,7 @@ Suggested future areas:
 
 ### Suggested Commit Boundary
 
-`test: validate point slice content and chart behavior`
+`test: validate point slice content and card behavior`
 
 ## 12. Phase 6: Coupon Overselling Extension
 
@@ -948,7 +956,7 @@ Recommended small commit groups:
 | Shared application shell | `feat: add single-page experiment navigation` |
 | Point static view | `feat: implement point lost update static slice` |
 | Point animation | `feat: add point request flow animation` |
-| Point validation | `test: validate point slice content and chart behavior` |
+| Point validation | `test: validate point slice content and card behavior` |
 | Overselling support | `feat: add coupon overselling database strategies` |
 | Duplicate support | `feat: add duplicate coupon issuance experiment` |
 | Redis section | `feat: add redis front-line gate section` |
@@ -981,7 +989,7 @@ MVP completion checklist:
 - Baseline scenarios are framed as intentional failure-reproduction configurations.
 - Scenario-specific conditions such as before `@Version` or before unique constraint are visible with results.
 - Expected-vs-actual summaries exist for every experiment.
-- Database strategy charts exist where comparable data exists.
+- Database strategy charts exist where comparable data exists, but the Point slice uses cards for strategy comparison.
 - Optimistic-lock observed examples are labeled correctly.
 - Redis Counter and Redis Lua appear in a separate Redis front-line gate section.
 - Redis is not presented as PostgreSQL durability or as a distributed transaction.

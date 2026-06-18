@@ -73,7 +73,7 @@ Complete interaction flow:
 4. Experiment conditions: mandatory and always visible near the result.
 5. Recorded-request animation: optional to start; must support explicit play, replay, skip, and reduced-motion behavior.
 6. Expected vs actual summary: mandatory and accessible without playing the animation.
-7. Strategy comparison chart: mandatory for database strategies when comparable data exists.
+7. Strategy comparison section: mandatory for database strategies when comparable data exists.
 8. Cause explanation: mandatory, short.
 9. Guarantee and limitation: mandatory for selected strategy.
 10. Appropriate use case: mandatory for solution strategies; concise for baseline/failure reproduction.
@@ -85,9 +85,9 @@ Skippable or collapsible:
 - Animation playback can be skipped or never started.
 - Test environment details should be collapsed.
 - Evidence link groups should be collapsed on both desktop and mobile.
-- Supporting counts can appear in chart tooltips or expandable details.
+- Supporting counts can appear in comparison cards, chart tooltips, or expandable details.
 
-The user should not need to read the chart before understanding the result. The expected-vs-actual summary owns the primary conclusion.
+The user should not need to read the comparison section before understanding the result. The expected-vs-actual summary owns the primary conclusion.
 
 ## 5. Landing Section
 
@@ -198,7 +198,8 @@ Display rules:
 
 ## 8. Experiment Conditions
 
-Conditions should be compact, scannable, and always near the selected result.
+Conditions should be compact, scannable, and always available near the selected result.
+For Point Lost Update, prefer progressive disclosure so the first screen stays focused on the result hook.
 
 Primary condition chips or rows:
 
@@ -344,13 +345,13 @@ Duplicate Issuance fields:
 
 Do not include every supporting count here. Success/failure counts belong in chart tooltips, expandable details, or condition-adjacent supporting text.
 
-## 11. Strategy Comparison Chart
+## 11. Strategy Comparison
 
-The chart compares strategy outcomes. It should not be the only explanation.
+The comparison section compares strategy outcomes. It should not be the only explanation.
 
 General chart rules:
 
-- Use Recharts.
+- Use Recharts for chart-based comparisons where a chart is the clearest fit.
 - Use clear Korean labels with English strategy names where helpful.
 - Keep chart captions close to the chart.
 - Use tooltips for success/failure counts and caveats.
@@ -358,16 +359,16 @@ General chart rules:
 - Do not treat timing measurements as general performance benchmarks.
 - Mark optimistic-lock numeric values as documented observed examples when counts can vary.
 
-Point Lost Update chart:
+Point Lost Update strategy comparison cards:
 
 | Item | Recommendation |
 | --- | --- |
-| Chart type | Bar chart or grouped bar chart |
-| Primary y-axis | Final balance |
-| x-axis | 트랜잭션만 적용, 비관적 락, 낙관적 락, 조건부 원자적 업데이트 |
-| Annotation | `이 실험 조건의 기대 최종 잔액: 0원` |
-| Tooltip | successCount, failCount, expectedBalanceBySuccessCount, caveat for optimistic lock |
-| Caveat | Expected balance `0` comes from the recorded condition: initial balance `10,000`, deduction amount `1,000`, concurrent requests `15`, and maximum successful deductions `10`. Optimistic-lock success count is one observed example, not deterministic |
+| Card content | strategy name, expected result, recorded result, invariant match, one short mechanism or conclusion, required caveats |
+| Layout | Compact grid on desktop, single-column cards on mobile |
+| Hook | Lead with `15건 모두 성공으로 기록됐지만 최종 잔액은 8,000원이었습니다.` for Transaction Only |
+| Optimistic-lock note | Label the numeric result as one documented observed execution example and keep the no-retry / run-variability caveat visible |
+| Caveat | Expected balance `0` comes from the recorded condition: initial balance `10,000`, deduction amount `1,000`, concurrent requests `15`, and maximum successful deductions `10` |
+| Non-goal | Do not present Point as a chart-led report or a separate `수치로 보기` table |
 
 Coupon Overselling chart:
 
@@ -498,7 +499,8 @@ Component ownership:
 | Conditions | Setup: initial balance, stock, requests, user pattern, retry, scenario-specific condition |
 | Animation | Conceptual request flow |
 | Expected/actual summary | Primary correctness conclusion |
-| Chart | Strategy comparison |
+| Point comparison cards | Strategy comparison for Point Lost Update |
+| Chart | Strategy comparison where a chart is the clearest fit for later experiments |
 | Tooltip/expandable details | Secondary counts such as successCount, failCount, Redis count, issued-user set size |
 | Cause section | Why the result happened and what invariant was affected |
 | Trade-off section | Guarantee, limitation, appropriate use case |
@@ -508,19 +510,19 @@ Component ownership:
 Avoid repeating:
 
 - Request count in summary if it is already in conditions.
-- Success/failure counts in both summary and chart labels.
+- Success/failure counts in both summary and point comparison card copy.
 - Full environment metadata in the primary experiment area.
 - Redis/PostgreSQL boundary explanation in every Redis tooltip; show it once clearly in the Redis section.
 - Long strategy descriptions in selector labels.
 - The full point scenario context in every component; keep it near the summary and chart, then use concise labels elsewhere.
 
-The expected-vs-actual summary should stay concise. Supporting metrics belong in tooltips or expandable details.
+The expected-vs-actual summary should stay concise. Supporting metrics belong in the Point comparison cards, tooltips, or expandable details.
 
 ## 17. Responsive Design
 
 Desktop:
 
-- Two-column experiment workspace is acceptable: animation/summary on one side and explanation/chart on the other.
+- Two-column experiment workspace is acceptable: result hook/summary on one side and comparison cards or explanation on the other.
 - Keep selectors visible near the top.
 - Evidence appears as a collapsed section with a clear `근거 자료 보기` control.
 
@@ -532,11 +534,11 @@ Tablet:
 
 Mobile:
 
-- Stack content in this order: experiment selector, strategy selector, conditions, animation, expected/actual summary, chart, explanation, evidence.
+- Stack content in this order: experiment selector, strategy selector, expected/actual summary, conditions, animation placeholder, comparison cards, explanation, evidence.
 - The primary conclusion must be readable without horizontal scrolling.
 - Experiment selector can scroll horizontally if touch targets remain large.
 - Strategy groups should stack vertically.
-- Charts should fit the viewport; use horizontal scroll only as a last resort and never for the primary conclusion.
+- Comparison cards should fit the viewport; use horizontal scroll only as a last resort and never for the primary conclusion.
 - Animation should use fewer visual nodes.
 - Evidence links must have comfortable touch targets.
 
@@ -549,7 +551,7 @@ Requirements:
 - Focus states must be visible.
 - Animation controls must be buttons with screen-reader labels.
 - Evidence expand/collapse controls must be keyboard-accessible and expose expanded/collapsed state.
-- Provide chart text alternatives that summarize the conclusion.
+- Provide chart text alternatives where charts are used, and concise card alternatives for Point Lost Update.
 - Do not communicate success or failure by color alone.
 - Ensure sufficient contrast for text, chart labels, and status indicators.
 - Respect reduced-motion preferences.
@@ -591,10 +593,10 @@ Expected states:
 | --- | --- |
 | Initial state | Point Lost Update selected, Transaction Only selected, animation idle, conditions visible |
 | Experiment selected | Strategy list updates to relevant strategies; default strategy selected |
-| Strategy selected | Conditions, animation, summary, chart highlight, explanation, and evidence update |
+| Strategy selected | Summary, conditions, animation placeholder, comparison cards, explanation, and evidence update |
 | Animation running | Replay/skip controls visible; strategy switching stops playback and resets for new strategy |
 | Animation skipped | Completed state appears immediately; summary remains shown |
-| Completed | Expected-vs-actual summary and chart highlight visible |
+| Completed | Expected-vs-actual summary and comparison cards visible |
 | Reduced-motion mode | Animation is skipped or heavily simplified by default |
 | Missing optional evidence | Show available evidence and omit missing link; do not block the experiment |
 | Invalid or incomplete static data | Show a clear fallback such as `검증되지 않은 데이터` and avoid rendering invented values |
@@ -618,6 +620,8 @@ Because the app uses static verified data, network loading should not be emphasi
 - The UI remains useful when animation is skipped.
 - Korean primary labels and English technical terms work together without visual clutter.
 - Scenario-specific conditions such as `without @Version` or `before unique constraint` remain visible.
+- The Point strategy comparison section reads as a compact set of cards instead of a chart-led report.
+- The Point comparison section communicates expected, recorded, and invariant-match status without a separate `수치로 보기` table.
 
 ## 22. Open UX Decisions
 

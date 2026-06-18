@@ -897,8 +897,13 @@ Recommended incremental display order:
 2. `coupon-overselling`
 3. `duplicate-coupon-issuance`
 
-Recommended chart grouping:
+Recommended presentation grouping:
 
+- Point Lost Update comparison cards:
+  - transaction-only failure reproduction,
+  - pessimistic lock,
+  - optimistic lock without retry,
+  - atomic update,
 - Database strategy comparison:
   - transaction-only failure reproduction,
   - pessimistic lock,
@@ -910,7 +915,7 @@ Recommended chart grouping:
   - Redis Lua stock gate,
   - Redis Lua duplicate gate.
 
-The first database-strategy comparison chart should not mix Redis Counter and Redis Lua directly with database strategies. Redis can be displayed as a follow-up section that explains front-line admission control and the Redis/PostgreSQL boundary.
+The first Point comparison section should not mix Redis Counter and Redis Lua directly with database strategies. Redis can be displayed as a follow-up section that explains front-line admission control and the Redis/PostgreSQL boundary.
 
 ## Unresolved Evidence Gaps
 
