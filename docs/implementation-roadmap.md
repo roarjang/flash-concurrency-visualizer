@@ -41,7 +41,9 @@ Implementation must follow these settled decisions:
 - Point Lost Update selected by default.
 - Duplicate Coupon Issuance included in the first public release.
 - Explicit Point failure-playback action; no autoplay on page load, automatic progression once started.
-- Replay, skip, and reduced-motion support.
+- Replay, post-completion stage inspection, and reduced-motion support.
+- Coupon Overselling uses no playback, strategy selector, chart, or dynamic result summary.
+- Coupon Overselling uses a compact problem summary, four always-visible database strategy cards, and collapsed disclosures.
 - Collapsed evidence section on desktop and mobile.
 - Public GitHub evidence links in rendered UI.
 - Local `repositoryPath` values kept as development metadata and never rendered.
@@ -69,24 +71,25 @@ flash-concurrency-visualizer/
         LandingSection.tsx
       selectors/
         ExperimentTabs.tsx
-        StrategySelector.tsx
       experiment/
         ExperimentWorkspace.tsx
         ExperimentConditions.tsx
-        ExpectedActualSummary.tsx
-        CauseMechanism.tsx
-        TradeoffPanel.tsx
         EvidenceDisclosure.tsx
       point/
-        PointProblemDefinition.tsx
+        PointWorkspace.tsx
         PointComparisonCards.tsx
+        PointPlayback.tsx
+        PointConditions.tsx
+        PointExplanation.tsx
+      coupon/
+        CouponWorkspace.tsx
+        CouponComparisonCards.tsx
+        CouponConditions.tsx
+        CouponExplanation.tsx
       charts/
         StrategyComparisonChart.tsx
         RedisGateChart.tsx
         ChartTextAlternative.tsx
-      animation/                    # Introduced only in approved animation phases
-        RequestFlowAnimation.tsx
-        animationStages.ts
       redis/
         RedisGateSection.tsx
     data/
@@ -109,12 +112,13 @@ flash-concurrency-visualizer/
 
 Architecture guidance:
 
-- `app/` owns the selected experiment. It owns selected-strategy state only for later experiments that use a selector.
+- `app/` owns the selected experiment.
 - `data/` contains verified static records only after Phase 1.
 - `types/` defines the contract between data and UI.
 - `components/experiment/` owns the shared explanation structure.
 - `charts/` isolates Recharts usage and chart text alternatives.
-- `animation/` owns the focused Lost Update failure playback and state beginning in Phase 4; Phase 3 does not render an animation shell or placeholder.
+- `components/point/PointPlayback.tsx` owns the focused Lost Update failure playback and state beginning in Phase 4.
+- `components/coupon/` reuses the recruiter-first card and disclosure pattern without importing Point playback behavior.
 - `redis/` keeps Redis front-line gate explanation separate from database strategy comparison.
 
 ## 4. Static Data Model Plan
@@ -135,7 +139,7 @@ Implementation order:
 3. Define scenario condition types for point, stock, duplicate, and Redis records.
 4. Define expected result and observed result shapes.
 5. Define invariant assertions separately from documented observed examples.
-6. Define comparison values for Point strategy cards and later database strategy charts.
+6. Define comparison values for Point and Coupon strategy cards and any separately approved later visualizations.
 7. Define Redis grouping data separately from database strategy comparison data.
 8. Define Korean and English display names.
 9. Define caveat fields, especially for optimistic-lock observed examples.
@@ -161,14 +165,12 @@ Shared components:
 - Application shell.
 - Compact title and one-line Korean message.
 - Experiment tabs.
-- Strategy selector with Baseline, Database, and Redis groupings for later experiments that use selection.
 - Experiment condition display.
-- Expected-vs-actual summary for later experiments where separately approved.
-- Point problem definition.
+- Compact Point and Coupon problem summaries.
 - Point comparison cards.
+- Coupon comparison cards.
 - Chart container and chart text alternative.
-- Cause and mechanism explanation.
-- Guarantee, limitation, and use-case panel.
+- Compact collapsed strategy explanation.
 - Collapsed evidence disclosure.
 - Responsive layout shell.
 - Focused Lost Update failure playback introduced in Phase 4.
@@ -177,13 +179,12 @@ Component ownership should follow the UX duplication rules:
 
 - Conditions own setup values.
 - Playback owns the transaction-only Lost Update failure mechanism beginning in Point Phase 4.
-- Summary owns the primary correctness conclusion only where a later experiment design requires it.
-- Point problem definition owns the concise Lost Update explanation.
+- Problem summary owns the concise failure definition.
 - Point comparison cards own all Point strategy-specific outcomes.
+- Coupon comparison cards own all Coupon database-strategy outcomes.
 - Chart owns strategy comparison where a chart is the right fit.
 - Tooltips and expandable details own secondary counts.
-- Explanation owns cause and mechanism.
-- Trade-off panel owns selection criteria.
+- Strategy explanation owns concise mechanism and trade-off copy.
 - Evidence disclosure owns source verification.
 
 ## 6. Phase 0: Project Foundation
@@ -313,7 +314,6 @@ Suggested future areas:
 - `src/app/appState.ts`
 - `src/components/layout/LandingSection.tsx`
 - `src/components/selectors/ExperimentTabs.tsx`
-- `src/components/selectors/StrategySelector.tsx`
 - `src/components/experiment/ExperimentWorkspace.tsx`
 
 ### Tasks
@@ -331,7 +331,7 @@ Suggested future areas:
 - Select Point Lost Update by default.
 - Switch experiment content without route navigation.
 - Do not create Point strategy-selection state; all four Point outcomes will be shown together in Phase 3.
-- Allow later coupon experiments to add selected-strategy state within their own approved phases.
+- Allow only separately approved later experiments to add selected-strategy state.
 - Do not create Point playback state or reserve request-flow layout in Phase 2.
 - Keep state URL-independent for the MVP.
 - Keep internal data and component boundaries route-compatible for a future extension without adding routing.
@@ -364,7 +364,7 @@ Implement a recruiter-first static Point Lost Update experience that communicate
 
 ### Scope
 
-Hero simplification, three scenario tabs, compact Point problem definition, four compact strategy comparison cards, and consolidated secondary disclosures.
+Hero simplification, three scenario tabs, compact Point workspace summary, four compact strategy comparison cards, and consolidated secondary disclosures.
 
 ### Files or areas likely to be affected
 
@@ -372,10 +372,10 @@ Suggested future areas:
 
 - `src/components/experiment/ExperimentWorkspace.tsx`
 - `src/components/experiment/ExperimentConditions.tsx`
-- `src/components/point/PointProblemDefinition.tsx`
+- `src/components/point/PointWorkspace.tsx`
 - `src/components/point/PointComparisonCards.tsx`
-- `src/components/experiment/CauseMechanism.tsx`
-- `src/components/experiment/TradeoffPanel.tsx`
+- `src/components/point/PointConditions.tsx`
+- `src/components/point/PointExplanation.tsx`
 - `src/components/experiment/EvidenceDisclosure.tsx`
 - `src/components/layout/LandingSection.tsx`
 
@@ -387,7 +387,7 @@ Suggested future areas:
   - Remove the English supporting line, recorded-experiment eyebrow, primary live-test disclaimer, and experiment eyebrow from the first-view hierarchy.
   - Move the static recorded-data limitation into secondary disclosure or footer content.
 - Keep all three scenario tabs near the top.
-- Add a compact Point problem definition without strategy-specific values.
+- Add a compact Point workspace summary without strategy-specific values.
 - Remove the separate selected-strategy result summary.
 - Remove the Point strategy selector; show all four strategy cards together instead.
 - Display Point scenario conditions in a collapsed disclosure:
@@ -395,16 +395,16 @@ Suggested future areas:
   - Deduction amount `1,000`.
   - Concurrent requests `15`.
   - Maximum valid successful deductions `10`.
-  - Retry policy none.
-  - Scenario-specific condition such as before `Point.@Version` for the transaction-only failure reproduction.
+  - Separate the compact failure-reproduction context from the numeric grid:
+    - `@Version 적용 전 · Retry 없음 · 트랜잭션 기반 차감`.
 - Add four substantially compact strategy cards:
-  - Transaction Only: `15건 성공 · 잔액 8,000원`, `Lost Update 발생` or `문제 발생`.
-  - Pessimistic Lock: `10건 성공 · 잔액 0원`, `정상 차감`.
-  - Optimistic Lock: `잔액 7,000원 · 실행 예시`, `충돌 감지`.
-  - Atomic Update: `10건 성공 · 잔액 0원`, `정상 차감`.
-- Limit each card to strategy name, primary result, plain-language status, and one short mechanism or conclusion when useful.
+  - Transaction Only: `문제 발생`, `잔액 8,000원`.
+  - Pessimistic Lock: `정상 차감`, `잔액 0원`.
+  - Optimistic Lock: `충돌 감지`, `잔액 7,000원`.
+  - Atomic Update: `정상 차감`, `잔액 0원`.
+- Limit each card to Korean strategy name, prominent status, neutral numeric result, and one short mechanism or conclusion.
 - Do not use `불변식` as the primary recruiter-facing label.
-- For Optimistic Lock, keep `실행 예시` visible but move no-retry and run-variability detail into collapsed technical content.
+- For Optimistic Lock, do not add an `실행 예시` badge; keep no-retry and run-variability detail in collapsed technical content.
 - Remove report-style card content:
   - `성공 수 기준 잔액 -5,000원`.
   - Repeated execution-condition labels.
@@ -413,7 +413,8 @@ Suggested future areas:
 - Avoid a separate `수치로 보기` table for the Point view.
 - Do not present the Point comparison as a chart-led report.
 - Remove the static request-flow placeholder from Phase 3.
-- Consolidate cause, mechanism, guarantee, limitation, appropriate use case, static-data limitation, and public evidence links into compact disclosures collapsed by default.
+- Consolidate strategy mechanism and the most important trade-off into two concise lines per strategy in one collapsed explanation.
+- Keep the static-data limitation and public evidence links in collapsed secondary content.
 
 ### Acceptance Criteria
 
@@ -421,9 +422,9 @@ Suggested future areas:
 - The Point comparison is presented as compact cards rather than a chart/table pair.
 - All four cards are visible together without a Point strategy selector.
 - No separate selected-strategy result summary duplicates card content.
-- The Point problem definition contains no strategy-specific result block.
+- The Point workspace summary contains no strategy-specific result block.
 - Transaction-only failure is framed as an intentional failure-reproduction configuration, not obsolete code.
-- Optimistic-lock result is visibly labeled as an execution example; variability detail remains available in collapsed technical content.
+- Optimistic-lock variability detail remains available in collapsed technical content without adding a badge to the card.
 - Conditions, technical explanation, static-data limitation, and evidence are collapsed by default.
 - No static request-flow placeholder appears in Phase 3.
 - Evidence is collapsed by default and uses public GitHub URLs.
@@ -449,7 +450,7 @@ Add one focused playback that explains why the transaction-only Lost Update fail
 
 ### Scope
 
-A working playback state machine, explicit play control, automatic progression through visible stages, replay, skip, reduced-motion behavior, and the recorded Lost Update overwrite story.
+A working playback state machine, explicit play control, automatic progression through visible stages, replay, post-completion stage inspection, reduced-motion behavior, and the conceptual Lost Update overwrite story.
 
 Phase boundary:
 
@@ -464,11 +465,9 @@ Phase boundary:
 
 Suggested future areas:
 
-- `src/components/animation/RequestFlowAnimation.tsx`
-- `src/components/animation/animationStages.ts`
-- `src/a11y/reducedMotion.ts`
-- `src/components/experiment/ExperimentWorkspace.tsx`
-- `src/styles/`
+- `src/components/point/PointPlayback.tsx`
+- `src/components/point/PointWorkspace.tsx`
+- `src/index.css`
 
 ### Tasks
 
@@ -476,20 +475,24 @@ Suggested future areas:
   - show the initial balance.
   - show representative requests, such as A and B, reading the same balance.
   - show each request calculating a new balance.
-  - show competing writes.
-  - show later writes overwriting earlier deductions.
-  - show the recorded inconsistent final balance.
+  - show A saving `9,000원`.
+  - show B saving the same `9,000원` without knowing about A's change.
+  - show the conceptual two-request result: two deductions attempted, final balance `9,000원`, Lost Update.
   - transition attention to the unchanged strategy comparison cards.
-- Organize the sequence into visible stages such as concurrent read, independent calculation, competing writes, overwrite, result, and transition.
+- Organize the sequence into the five visible stages `동시 읽기`, `각자 계산`, `A 저장`, `덮어쓰기`, and `결과`.
 - Use a small representative number of visual nodes rather than all 15 requests.
-- Add explicit play button with Korean label such as `기록된 요청 흐름 재생`.
-- Add replay and skip controls.
-- Respect `prefers-reduced-motion` by skipping or heavily simplifying motion.
-- Keep the compact Point problem definition, comparison cards, and collapsed details accessible before playback.
+- Keep the recorded 15-request result, including balance `8,000원`, in the static transaction-only strategy card rather than the conceptual playback result.
+- Before playback, show only the lightweight current balance `10,000원`.
+- Add the explicit `▶ 재생` action and change it to `↻ 다시 보기` after completion.
+- Keep stages 1 through 4 visible for approximately two seconds each; keep the result visible until user interaction.
+- Keep stage badges non-interactive during playback and make them selectable after completion.
+- Respect `prefers-reduced-motion` by skipping timed progression and exposing the explanatory stages immediately.
+- Keep the compact Point workspace summary, comparison cards, and collapsed details accessible before playback.
 - Reset playback to idle when the experiment changes.
 - Keep all four strategy cards static during playback; do not animate strategies, update a chart, or create/update a selected-strategy summary.
-- Add copy explaining that playback simplifies one recorded failure and does not run Java concurrency tests.
-- Do not add next-step navigation, pause/resume controls, or speed controls.
+- Do not add instructional control copy around the idle state.
+- Keep the recorded-data and no-live-execution limitation in the secondary evidence disclosure.
+- Do not add next/previous navigation, pause/resume controls, speed controls, or timeline scrubbing.
 - Implement with React state and CSS transitions if sufficient.
 - Avoid a heavy animation library unless later implementation proves CSS transitions are inadequate.
 
@@ -501,8 +504,8 @@ Suggested future areas:
 - Playback makes the stale-read/competing-write/overwrite sequence understandable.
 - Playback ends by directing attention to the static strategy cards rather than animating a solution.
 - Playback completion does not alter the four card outcomes or reveal a separate dynamic result panel.
-- Skip immediately reaches completed visual state.
 - Replay restarts the sequence.
+- After completion, selecting a stage badge shows that stage immediately without restarting automatic playback.
 - Reduced-motion mode avoids unnecessary motion.
 - No visual timing is presented as a benchmark.
 - Representative nodes do not imply one node per actual request, and the playback does not replay all 15 requests one by one.
@@ -515,7 +518,7 @@ Suggested future areas:
 - Do not implement strategy-specific animations.
 - Do not implement separate pessimistic-lock, optimistic-lock, or atomic-update playback.
 - Do not replay every experiment record or every recorded request.
-- Do not add next-step navigation, pause/resume controls, or speed controls.
+- Do not add next/previous navigation, pause/resume controls, speed controls, or timeline scrubbing.
 - Do not implement coupon, duplicate-issuance, or Redis playback.
 - Do not add a Point strategy selector to control playback.
 
@@ -523,120 +526,84 @@ Suggested future areas:
 
 `feat: add point lost update failure playback`
 
-## 11. Phase 5: Point Comparison Card and Content Validation
+## 11. Phase 5: Coupon Overselling Extension
 
 ### Goal
 
-Verify the Point slice before copying the architecture to other experiments.
+Extend the finalized recruiter-first Point comparison pattern to Coupon Overselling without copying Point playback.
 
 ### Scope
 
-Content review, card interpretation, mobile check, evidence-link check, and accessibility review for the Point slice.
+Compact Coupon problem summary, four always-visible database strategy comparison cards, collapsed conditions, collapsed strategy explanation, and collapsed evidence.
 
 ### Files or areas likely to be affected
 
 Suggested future areas:
 
-- `src/components/point/PointComparisonCards.tsx`
-- `src/components/point/PointProblemDefinition.tsx`
-- `src/components/experiment/EvidenceDisclosure.tsx`
-- `src/styles/`
+- `src/App.tsx`
+- `src/components/coupon/CouponWorkspace.tsx`
+- `src/components/coupon/CouponComparisonCards.tsx`
+- `src/components/coupon/CouponConditions.tsx`
+- `src/components/coupon/CouponExplanation.tsx`
+- Shared evidence disclosure only where reuse does not introduce Point-specific wording.
+- `src/index.css`
 
 ### Tasks
 
-- Validate card labels and section text.
-- Confirm the Point problem definition is concise and contains no strategy-specific result summary.
-- Confirm all four strategy outcomes are visible together.
-- Confirm optimistic-lock `실행 예시` is visible and its no-retry variability detail is available in collapsed technical content.
-- Check that success/failure counts are not repeated across cards, problem copy, and disclosures without a clear purpose.
-- Verify mobile readability for tabs, problem definition, cards, and disclosures.
-- Add or refine a card text alternative where needed.
-- Verify conditions, technical explanation, static-data limitation, and evidence are collapsed by default.
-- Verify the Phase 3 request-flow placeholder is absent.
-- Verify evidence links open public GitHub URLs.
-- Review technical wording against `docs/project-context.md` and `docs/experiment-data.md`.
-
-### Acceptance Criteria
-
-- A reviewer can understand Point Lost Update within about ten seconds.
-- The compact problem definition and card section do not contradict each other.
-- The first view does not require strategy selection or backward attention movement.
-- The page does not imply live backend execution.
-- No local paths appear in rendered UI.
-- Point slice is stable enough to use as the pattern for Overselling and Duplicate.
-
-### Explicit Non-Goals
-
-- Do not expand scope to all experiments before this validation is complete.
-- Do not add new metrics that are not in `docs/experiment-data.md`.
-- Do not tune visual timing as if it were measured backend performance.
-
-### Suggested Commit Boundary
-
-`test: validate point slice content and card behavior`
-
-## 12. Phase 6: Coupon Overselling Extension
-
-### Goal
-
-Extend the validated Point system to Coupon Overselling.
-
-### Scope
-
-Overselling experiment tab content, database strategies, stock conditions, expected-vs-actual summary, comparison chart, explanations, and evidence links.
-
-### Files or areas likely to be affected
-
-Suggested future areas:
-
-- `src/components/experiment/ExperimentWorkspace.tsx`
-- `src/components/experiment/ExperimentConditions.tsx`
-- `src/components/experiment/ExpectedActualSummary.tsx`
-- `src/components/charts/StrategyComparisonChart.tsx`
-- `src/data/experiments.ts`
-
-### Tasks
-
-- Add Overselling strategy set:
+- Add a compact problem summary that makes this scan path clear:
+  - Coupon stock `100`.
+  - Issued records `1,000`.
+  - `재고 초과 발급`.
+  - Strategy differences.
+- Show all four database strategies together:
   - `트랜잭션만 적용`.
   - `비관적 락`.
   - `낙관적 락`.
   - `조건부 원자적 업데이트`.
-- Display stock scenario conditions:
+- Give each card a prominent plain-language status, a neutral numeric outcome, and one short explanation:
+  - Transaction Only: `재고 초과 발급`, `발급 기록 1,000건`.
+  - Pessimistic Lock: `재고 한도 유지`, `발급 기록 100건`.
+  - Optimistic Lock: `충돌 감지`, `발급 기록 100건`.
+  - Atomic Update: `재고 한도 유지`, `발급 기록 100건`.
+- Keep optimistic-lock scheduling and no-retry variability in collapsed technical detail rather than a large badge or caveat block.
+- Add collapsed stock conditions:
   - Coupon stock `100`.
   - Concurrent requests `1,000`.
   - Distinct users `1,000`.
   - Retry policy none.
   - Before `Coupon.@Version` for transaction-only failure reproduction.
   - Lock hold or delay only where relevant.
-- Show expected-vs-actual summary:
-  - Maximum allowed issuances.
-  - Observed issued records.
-  - Overselling occurred or stock limit preserved.
-- Add grouped bar chart for issued records vs stock limit.
-- Keep Redis Counter and Redis Lua out of the first database comparison chart.
-- Add cause, mechanism, guarantee, limitation, use case, and collapsed evidence links.
+- Add a compact collapsed strategy explanation.
+- Add collapsed evidence and keep the recorded-data limitation secondary.
+- Keep Redis Counter and Redis Lua for the separately planned Redis front-line gate section.
 
 ### Acceptance Criteria
 
 - Overselling can be selected from the second experiment tab.
-- The stock limit and issued-record count are clearly distinguished.
+- A reviewer can scan `재고 100장 → 발급 기록 1,000건 → 재고 초과 발급 → 전략별 결과` within a few seconds.
+- All four database strategy outcomes are visible together.
+- The stock limit and issued-record count are clearly distinguished without a chart.
 - Transaction-only overselling is framed as intentional failure reproduction.
-- Optimistic-lock stock-control counts are labeled as a documented observed example where applicable.
-- Redis strategies are not mixed into the first database chart.
+- Optimistic-lock variability remains discoverable in collapsed technical detail.
+- Conditions, strategy explanation, static-data limitation, and evidence are collapsed by default.
 - Reused components do not force Point-specific wording into coupon content.
+- Coupon uses no playback, strategy selector, grouped bar chart, or dynamic summary section.
 
 ### Explicit Non-Goals
 
 - Do not implement Duplicate Issuance in this phase.
 - Do not implement Redis section in this phase.
+- Do not implement Coupon playback.
+- Do not add a strategy selector.
+- Do not add a grouped bar chart.
+- Do not add a separate dynamic expected-vs-actual summary.
 - Do not present the documented pessimistic-lock duration as a general benchmark.
 
 ### Suggested Commit Boundary
 
 `feat: add coupon overselling database strategies`
 
-## 13. Phase 7: Duplicate Coupon Issuance Extension
+## 12. Phase 6: Duplicate Coupon Issuance Extension
 
 ### Goal
 
@@ -694,7 +661,7 @@ Suggested future areas:
 
 `feat: add duplicate coupon issuance experiment`
 
-## 14. Phase 8: Redis Front-Line Gate Section
+## 13. Phase 7: Redis Front-Line Gate Section
 
 ### Goal
 
@@ -751,7 +718,7 @@ Suggested future areas:
 
 `feat: add redis front-line gate section`
 
-## 15. Phase 9: Responsive Design and Accessibility
+## 14. Phase 8: Responsive Design and Accessibility
 
 ### Goal
 
@@ -780,19 +747,18 @@ Suggested future areas:
 - Verify mobile layout order:
   - compact title and message,
   - experiment tabs,
-  - Point problem definition,
+  - Point workspace summary,
+  - Point playback,
   - four Point strategy cards,
-  - Phase 4 playback when implemented,
   - collapsed Point details.
-- Verify later coupon layouts separately where strategy selectors, summaries, and charts are approved.
-- Ensure later expected-vs-actual summaries stack cleanly on mobile where used.
+- Verify Coupon layout order: problem summary, four strategy cards, collapsed details.
 - Keep chart labels readable and avoid horizontal scrolling for the primary conclusion.
-- Simplify animation node count on mobile where needed.
-- Ensure selectors are keyboard-accessible and expose selected state.
+- Keep the finalized representative Point request count on mobile.
+- Ensure experiment tabs are keyboard-accessible and expose selected state.
 - Ensure focus states are visible.
 - Ensure evidence disclosure exposes expanded and collapsed state.
 - Add chart text alternatives.
-- Ensure skip and replay controls are accessible.
+- Ensure replay and post-completion stage controls are accessible.
 - Respect reduced-motion preferences.
 - Ensure state is not communicated by color alone.
 - Ensure evidence links have comfortable touch targets.
@@ -800,8 +766,8 @@ Suggested future areas:
 ### Acceptance Criteria
 
 - Mobile users can understand the conclusion without horizontal scrolling.
-- Keyboard users can operate tabs, strategy selectors where present, Phase 4 animation controls, and evidence disclosure.
-- Screen readers receive the Point problem definition and four card outcomes before secondary details.
+- Keyboard users can operate tabs, Point playback controls, completed stage badges, and evidence disclosure.
+- Screen readers receive each experiment problem summary and card outcomes before secondary details.
 - Reduced-motion users can access completed state without motion-heavy playback.
 - Charts have useful text alternatives.
 
@@ -815,7 +781,7 @@ Suggested future areas:
 
 `feat: improve responsive and accessible experience`
 
-## 16. Phase 10: Testing and Quality Verification
+## 15. Phase 9: Testing and Quality Verification
 
 ### Goal
 
@@ -845,8 +811,7 @@ Essential checks:
 - Data validation tests for required fields and no renderable local paths.
 - Evidence URL format checks for public GitHub `main` branch links.
 - Experiment switching tests.
-- Strategy switching tests.
-- Point playback skip and replay tests.
+- Point playback replay and completed-stage selection tests.
 - Reduced-motion behavior check.
 - Basic accessibility checks for controls and disclosures.
 - Manual desktop and mobile responsive checks.
@@ -879,7 +844,7 @@ Optional checks:
 
 `test: add visualizer quality checks`
 
-## 17. Phase 11: Vercel Deployment
+## 16. Phase 10: Vercel Deployment
 
 ### Goal
 
@@ -934,7 +899,7 @@ Suggested future areas:
 
 `chore: prepare vercel static deployment`
 
-## 18. Phase 12: Portfolio Integration
+## 17. Phase 11: Portfolio Integration
 
 ### Goal
 
@@ -979,7 +944,7 @@ Suggested future areas:
 
 `docs: add visualizer portfolio integration notes`
 
-## 19. Commit Plan
+## 18. Commit Plan
 
 Recommended small commit groups:
 
@@ -990,7 +955,6 @@ Recommended small commit groups:
 | Shared application shell | `feat: add single-page experiment navigation` |
 | Point static view | `feat: implement point lost update static slice` |
 | Point failure playback | `feat: add point lost update failure playback` |
-| Point validation | `test: validate point slice content and card behavior` |
 | Overselling support | `feat: add coupon overselling database strategies` |
 | Duplicate support | `feat: add duplicate coupon issuance experiment` |
 | Redis section | `feat: add redis front-line gate section` |
@@ -1001,7 +965,7 @@ Recommended small commit groups:
 
 Do not create commits during roadmap authoring. Each implementation commit should be small enough to inspect independently.
 
-## 20. Definition of Done
+## 19. Definition of Done
 
 MVP completion checklist:
 
@@ -1022,12 +986,12 @@ MVP completion checklist:
 - Strategy labels match the approved Korean terminology.
 - Baseline scenarios are framed as intentional failure-reproduction configurations.
 - Scenario-specific conditions such as before `@Version` or before unique constraint are visible with results.
-- Point strategy outcomes exist in the four compact cards; later experiments use expected-vs-actual summaries only where separately approved.
-- Database strategy charts exist where comparable data exists, but the Point slice uses cards for strategy comparison.
+- Point and Coupon database strategy outcomes exist in four compact, always-visible cards.
+- Coupon Overselling has no playback, strategy selector, grouped bar chart, or dynamic result summary.
 - Optimistic-lock observed examples are labeled correctly.
 - Redis Counter and Redis Lua appear in a separate Redis front-line gate section.
 - Redis is not presented as PostgreSQL durability or as a distributed transaction.
-- Point failure playback is optional, explicit, replayable, skippable, and reduced-motion aware.
+- Point failure playback is optional, explicit, replayable, stage-inspectable after completion, and reduced-motion aware.
 - The result remains understandable without starting playback.
 - Point Phase 3 contains no static request-flow placeholder.
 - Evidence links are collapsed by default.
@@ -1040,7 +1004,7 @@ MVP completion checklist:
 - Public deployed URL is verified on desktop and mobile.
 - Portfolio link to the deployed visualizer is verified.
 
-## 21. Deferred Work
+## 20. Deferred Work
 
 These items are not part of the MVP phases unless separately approved:
 
@@ -1061,33 +1025,32 @@ These items are not part of the MVP phases unless separately approved:
 - Redis reconciliation, TTL policy, rebuild process, or production monitoring.
 - Production payment, order, or commerce functionality.
 
-## 22. Risks and Mitigations
+## 21. Risks and Mitigations
 
 | Risk | Mitigation |
 | --- | --- |
 | Incorrect transcription of recorded values | Complete Phase 1 before UI work and verify every numeric value against `docs/experiment-data.md`. |
-| Playback mistaken for live execution | Use explicit play action, non-live disclaimer, representative nodes, and no benchmark-like timing in Phase 4. |
-| Duplicated information causes drift | Follow component ownership rules in Phase 3 and validate duplication in Phase 5. |
-| Scope grows too large before a usable slice exists | Complete Point static slice and validation before Overselling, Duplicate, and Redis phases. |
-| Chart metrics confuse reviewers | Use experiment-specific chart types and avoid forcing incomparable values onto one axis. |
-| Optimistic-lock example counts look deterministic | Store and display caveats as observed examples in Phase 1 and validate wording in Phase 5. |
-| Redis and PostgreSQL responsibilities are conflated | Implement Redis as a separate Phase 8 section with boundary copy and separate chart context. |
-| Mobile chart readability is poor | Address chart labels, alternatives, and stacking in Phase 9 before deployment. |
-| Evidence links break or expose local paths | Validate public GitHub URLs and prevent renderable local paths in Phases 1 and 10. |
-| Vercel setup becomes more complex than needed | Use Vite defaults and add Vercel-specific configuration only if required in Phase 11. |
+| Playback mistaken for live execution | Use an explicit play action, representative nodes, secondary recorded-data disclosure, and no benchmark-like timing in Phase 4. |
+| Duplicated information causes drift | Keep problem summaries, comparison cards, and disclosures responsible for distinct information. |
+| Scope grows too large before a usable slice exists | Reuse the finalized Point card pattern for Coupon and avoid adding interaction without explanatory value. |
+| Coupon becomes report-like | Keep all four outcomes visible and omit playback, selectors, charts, and dynamic summaries in Phase 5. |
+| Optimistic-lock example counts look deterministic | Keep scheduling and no-retry variability in collapsed technical detail. |
+| Redis and PostgreSQL responsibilities are conflated | Implement Redis as a separate Phase 7 section with boundary copy and separate visual context. |
+| Mobile chart readability is poor | Address any separately approved chart labels and alternatives in Phase 8 before deployment. |
+| Evidence links break or expose local paths | Validate public GitHub URLs and prevent renderable local paths in Phases 1 and 9. |
+| Vercel setup becomes more complex than needed | Use Vite defaults and add Vercel-specific configuration only if required in Phase 10. |
 
-## 23. Implementation Order Summary
+## 22. Implementation Order Summary
 
 1. Foundation.
 2. Static data contracts.
 3. Shared shell.
 4. Point static slice.
 5. Point Lost Update failure playback.
-6. Point validation.
-7. Overselling.
-8. Duplicate Issuance.
-9. Redis section.
-10. Responsive and accessibility.
-11. Testing.
-12. Vercel deployment.
-13. Portfolio integration.
+6. Coupon Overselling.
+7. Duplicate Issuance.
+8. Redis section.
+9. Responsive and accessibility.
+10. Testing.
+11. Vercel deployment.
+12. Portfolio integration.

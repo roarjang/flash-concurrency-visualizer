@@ -10,12 +10,12 @@ Primary reviewer journey:
 
 1. Land on the page and see the compact project message and three experiment groups.
 2. Start with Point Lost Update by default.
-3. Understand the Point problem through one concise definition.
-4. Compare all four Point strategy outcomes together without selecting a strategy.
-5. Open conditions, technical explanation, the static-data limitation, or evidence only when more depth is wanted.
-6. In Phase 4, optionally play the Lost Update failure explanation without changing the already-visible card outcomes.
+3. Understand the Point problem through its compact workspace summary.
+4. Optionally play the stage-based Lost Update explanation.
+5. Compare all four Point strategy outcomes together without selecting a strategy.
+6. Open conditions, technical explanation, the static-data limitation, or evidence only when more depth is wanted.
 
-Later coupon experiments may use strategy selection and expected-vs-actual summaries where their separately approved designs require them.
+Coupon Overselling follows the same recruiter-first comparison pattern without playback, strategy selection, charts, or a dynamic summary.
 
 The interface should feel like an interactive technical explanation, not a generic analytics dashboard and not an animation showcase.
 
@@ -55,9 +55,18 @@ Point Lost Update page structure:
 
 1. Compact project title and one-line Korean message.
 2. Three experiment tabs.
-3. Compact Point Lost Update problem definition.
-4. Four compact strategy comparison cards.
-5. Optional collapsed details for experiment conditions, technical explanation, static-data limitation, and code/evidence.
+3. Compact Point Lost Update problem summary.
+4. Optional Lost Update failure playback.
+5. Four compact strategy comparison cards.
+6. Optional collapsed details for experiment conditions, technical explanation, static-data limitation, and code/evidence.
+
+Coupon Overselling page structure:
+
+1. Compact Coupon Overselling problem summary.
+2. Four always-visible database strategy comparison cards.
+3. Collapsed experiment conditions.
+4. Collapsed strategy explanation.
+5. Collapsed evidence and static-data limitation.
 
 The first visible experiment should default to Point Lost Update because it has the smallest scenario and is easiest to understand quickly. Duplicate Coupon Issuance should be available from the first release, but it should not overcrowd the first viewport.
 
@@ -67,18 +76,27 @@ Point Lost Update interaction flow:
 
 1. See the project title and the message `같은 요청도 적용한 전략에 따라 결과가 달라집니다.`
 2. See the three explored concurrency scenarios.
-3. Understand the Point Lost Update problem in one concise statement.
-4. Compare all four strategy outcomes without selecting a strategy or moving attention to another section.
-5. Open conditions, technical explanation, static-data limitation, or code/evidence only when more depth is wanted.
+3. Understand the Point Lost Update problem in one concise workspace summary.
+4. Optionally play the conceptual Lost Update failure flow.
+5. Compare all four strategy outcomes without selecting a strategy or moving attention to another section.
+6. Open conditions, technical explanation, static-data limitation, or code/evidence only when more depth is wanted.
 
 Collapsed by default:
 
 - Experiment conditions and test environment details.
-- Cause, mechanism, guarantee, limitation, and appropriate use case.
+- Compact strategy mechanism and trade-off explanation.
 - Static recorded-data limitation.
 - Evidence link groups.
 
-The compact Point problem statement owns the problem definition. The four strategy comparison cards own all Point strategy-specific outcomes.
+The compact Point workspace summary owns the problem definition. Playback owns the failure mechanism. The four strategy comparison cards own all Point strategy-specific outcomes.
+
+Coupon Overselling interaction flow:
+
+1. Read the stock limit and overselling problem in a compact summary.
+2. Scan all four database strategy outcomes together.
+3. Open conditions, strategy explanation, or evidence only when more depth is wanted.
+
+The Coupon problem summary owns the failure definition. The strategy cards own the recorded outcomes. Disclosures own technical depth.
 
 ## 5. Landing Section
 
@@ -124,30 +142,27 @@ Behavior:
 
 The selector should not include Redis as an experiment group. Redis is a strategy grouping within coupon-related experiments.
 
-## 7. Strategy Selector
-
-Strategies must be filtered by selected experiment.
+## 7. Strategy Presentation
 
 Point Lost Update:
 
 - Do not use a separate strategy selector or strategy tabs.
 - Show all four strategies together as comparison cards:
-  - `트랜잭션만 적용` / `Transaction Only`
-  - `비관적 락` / `Pessimistic Lock`
-  - `낙관적 락` / `Optimistic Lock`
-  - `조건부 원자적 업데이트` / `Atomic Update`
+  - `트랜잭션만 적용`
+  - `비관적 락`
+  - `낙관적 락`
+  - `조건부 원자적 업데이트`
 
 Coupon Overselling:
 
-- Baseline:
-  - `트랜잭션만 적용` / `Transaction Only`
-- Database strategies:
-  - `비관적 락` / `Pessimistic Lock`
-  - `낙관적 락` / `Optimistic Lock`
-  - `조건부 원자적 업데이트` / `Atomic Update`
-- Redis strategies:
-  - `Redis 카운터` / `Redis Counter`
-  - `Redis Lua 스크립트` / `Redis Lua Script`
+- Do not use a strategy selector or strategy tabs.
+- Show the four database strategies together as always-visible comparison cards:
+  - `트랜잭션만 적용`
+  - `비관적 락`
+  - `낙관적 락`
+  - `조건부 원자적 업데이트`
+- Keep Redis Counter and Redis Lua in the separately planned Redis front-line gate section.
+- Do not hide the database comparison behind interaction.
 
 Duplicate Coupon Issuance:
 
@@ -158,12 +173,7 @@ Duplicate Coupon Issuance:
 - Redis strategies:
   - `Redis Lua 스크립트` / `Redis Lua Script`
 
-Presentation for coupon experiments:
-
-- Use grouped segmented controls or grouped button rows: `Baseline`, `Database`, `Redis`.
-- Keep the selected strategy visually prominent.
-- Avoid a crowded single row when many strategies exist. On mobile, groups can stack vertically.
-- Switching strategies should update conditions, summary, explanation, chart highlight, and evidence links where a later experiment uses strategy selection.
+Duplicate Coupon Issuance may use its separately approved presentation. The Coupon Overselling decision must not be treated as approval for a selector, chart, or dynamic summary in another experiment.
 
 Baseline labels should be framed as failure-reproduction configurations, not obsolete code.
 
@@ -179,14 +189,12 @@ Standard strategy labels:
 | Redis Counter | `Redis 카운터` |
 | Redis Lua Script | `Redis Lua 스크립트` |
 
-Display rules:
+Terminology rules:
 
 - Korean is the primary visible label.
-- English terminology may appear as supporting text.
-- On wide screens, a strategy control may show two lines, for example `비관적 락` and `Pessimistic Lock`.
-- On narrow screens, show only the Korean label when space is limited.
+- Point and Coupon comparison cards use Korean strategy names only.
 - In explanatory content, include the English term on first occurrence where helpful.
-- Use the same terminology across selectors, charts, summaries, explanations, and evidence sections.
+- Use the same terminology across cards, explanations, and evidence sections.
 - Do not introduce alternative Korean names without a documented reason.
 
 ## 8. Experiment Conditions
@@ -201,8 +209,9 @@ Point Lost Update:
 - `초기 잔액 10,000`
 - `동시 요청 15`
 - `차감 1,000`
-- `Retry 없음`
-- `조건: Point.@Version 적용 전` for the transaction-only failure scenario
+- `최대 유효 성공 10`
+- Place failure reproduction context below the numeric conditions with lightweight separation:
+  - `@Version 적용 전 · Retry 없음 · 트랜잭션 기반 차감`
 
 Coupon Overselling:
 
@@ -249,36 +258,41 @@ Purpose:
 
 The playback is not a benchmark, live load test, performance visualization, or strategy-comparison animation.
 
-Required copy near the animation:
+Finalized presentation:
 
-`단순화된 재생입니다. 실제 기록된 결과는 카드와 상세 정보에 표시되며, 브라우저에서 DB 요청을 실행하지 않습니다.`
-
-Recommended supporting message:
-
-`백엔드 JUnit 동시성 테스트에서 기록된 요청 흐름과 결과를 단순화해 재생합니다.`
+- Section title: `Lost Update 발생 과정`.
+- Before playback, show only `현재 잔액` and `10,000원` in a lightweight presentation.
+- Keep the play action in the section header with icon and text:
+  - `▶ 재생` before playback.
+  - `↻ 다시 보기` after completion.
+- Do not add instructional copy explaining how playback controls work.
+- Keep the recorded-data and no-live-execution limitation in the secondary evidence disclosure.
 
 Playback story:
 
 | Stage | Meaning |
 | --- | --- |
-| Concurrent Read | Representative requests read the same balance |
-| Independent Calculation | Each request calculates its own new balance |
-| Competing Writes | Requests write their calculated values |
-| Overwrite | Later writes overwrite earlier deductions |
-| Result | Show the recorded inconsistent final balance |
-| Transition | Direct attention to the static strategy comparison cards |
+| `동시 읽기` | A and B read the same `10,000원` balance |
+| `각자 계산` | A and B each calculate `9,000원` |
+| `A 저장` | A saves `9,000원` first |
+| `덮어쓰기` | B saves the same `9,000원` without knowing about A's change |
+| `결과` | Show the conceptual two-request result: two deductions attempted, final balance `9,000원`, Lost Update |
 
 Playback requirements:
 
 - Use a small representative number of visual nodes, such as A and B or a similarly small set.
 - Never draw all 15 individual requests as separate animated nodes.
-- Actual recorded counts must remain in the comparison cards or collapsed details.
-- Recommended duration: 1.8 to 2.8 seconds.
+- The conceptual playback result must not be presented as the recorded 15-request result.
+- The recorded transaction-only balance `8,000원` remains in the comparison card and supporting data.
+- Keep stages 1 through 4 visible for approximately two seconds each; the result remains visible until user interaction.
 - Do not autoplay on page load.
-- Initial page load should display the compact Point problem and all four cards without motion.
-- Start animation only through an explicit user action such as `기록된 요청 흐름 재생`.
+- Initial page load should display the compact Point summary, lightweight current balance, play action, and all four cards without motion.
+- Start animation only through the explicit `▶ 재생` action.
 - Once started, the playback progresses automatically through the visible stages.
-- Respect `prefers-reduced-motion`: skip animation by default and show the completed state.
+- During automatic playback, stage badges are visible but non-interactive.
+- After completion, stage badges become clickable so reviewers can inspect a specific stage immediately.
+- Do not add next/previous controls, pause/resume, speed controls, or timeline scrubbing.
+- Respect `prefers-reduced-motion`: skip timed progression and expose the explanatory stages immediately.
 - The Point problem and strategy outcomes must remain understandable even if the playback is never started.
 - Playback must not block access to the comparison cards.
 - When switching experiments, reset playback to a stable idle state.
@@ -293,22 +307,23 @@ Responsibility boundary:
 
 Out of scope:
 
-- Next-step navigation between stages.
+- Next/previous navigation between stages.
 - Pause and resume controls.
 - Speed controls.
+- Timeline scrubbing.
 - Strategy-specific animations.
 - Separate pessimistic-lock, optimistic-lock, or atomic-update playback.
 - Replaying every experiment record.
 - Coupon, duplicate-issuance, or Redis playback.
 - Performance or latency visualization.
 
-## 10. Expected vs Actual Summary
+## 10. Dynamic Result Summaries
 
 Point Lost Update does not use a separate selected-strategy result summary.
 
 Point ownership:
 
-- The compact Point problem definition explains the concurrency failure.
+- The compact Point workspace summary explains the concurrency failure.
 - The four comparison cards own expected and recorded strategy outcomes.
 - Changing or emphasizing a card must not update a separate result panel elsewhere on the page.
 
@@ -318,17 +333,13 @@ Reason:
 - The same strategy result should not be repeated in a separate summary and comparison card.
 - Recruiter-facing comprehension is faster when all outcomes remain visible together.
 
-Later experiment guidance:
+Coupon Overselling also does not use a separate dynamic expected-vs-actual summary.
 
-- Coupon and duplicate experiments may still use an expected-vs-actual summary if their later approved designs benefit from one.
+Coupon ownership:
 
-Coupon Overselling fields:
-
-- Maximum allowed issuances.
-- Observed issued records.
-- Conclusion:
-  - `재고 초과 발급 발생`
-  - or `재고 한도 유지`
+- The compact problem summary establishes stock `100`, recorded issuance `1,000`, and the overselling conclusion.
+- The four comparison cards own strategy-specific outcomes.
+- No strategy selection updates a separate result area.
 
 Duplicate Issuance fields:
 
@@ -338,7 +349,7 @@ Duplicate Issuance fields:
   - `중복 발급 발생`
   - or `중복 발급 방지`
 
-Do not include every supporting count here. Success/failure counts belong in chart tooltips, expandable details, or condition-adjacent supporting text.
+Do not repeat every supporting count in the primary view. Success/failure counts and optimistic-lock variability belong in collapsed details.
 
 ## 11. Strategy Comparison
 
@@ -360,11 +371,11 @@ Point Lost Update strategy comparison cards:
 | --- | --- |
 | Card content | strategy name, primary outcome, plain-language status, one short mechanism or conclusion when useful |
 | Layout | Compact grid on desktop, single-column cards on mobile |
-| Transaction Only | `15건 성공 · 잔액 8,000원`, `Lost Update 발생` or `문제 발생` |
-| Pessimistic Lock | `10건 성공 · 잔액 0원`, `정상 차감` |
-| Optimistic Lock | `잔액 7,000원 · 실행 예시`, `충돌 감지` |
-| Atomic Update | `10건 성공 · 잔액 0원`, `정상 차감` |
-| Optimistic-lock note | Do not present `7,000원` as deterministic; move no-retry and run-variability detail into collapsed technical content |
+| Transaction Only | `문제 발생`, `잔액 8,000원` |
+| Pessimistic Lock | `정상 차감`, `잔액 0원` |
+| Optimistic Lock | `충돌 감지`, `잔액 7,000원` |
+| Atomic Update | `정상 차감`, `잔액 0원` |
+| Optimistic-lock note | Do not add an `실행 예시` badge; keep no-retry and run-variability context in collapsed technical content |
 | Non-goal | Do not present Point as a chart-led report or a separate `수치로 보기` table |
 
 Point card copy rules:
@@ -378,16 +389,18 @@ Point card copy rules:
 - Do not show a long optimistic-lock caveat block inside the card.
 - Keep the four cards substantially more compact than the technical details below.
 
-Coupon Overselling chart:
+Coupon Overselling strategy comparison cards:
 
 | Item | Recommendation |
 | --- | --- |
-| Chart type | Grouped bar chart |
-| Primary y-axis | Issued records vs stock limit |
-| x-axis | 트랜잭션만 적용, 비관적 락, 낙관적 락, 조건부 원자적 업데이트 |
-| Series | `허용 재고`, `발급 기록 수` |
-| Tooltip | successCount, failCount, finalIssuedQuantity, caveat for optimistic lock |
-| Caveat | Do not include Redis in the first database chart |
+| Card content | strategy name, primary issued-record outcome, plain-language status, one short explanation when useful |
+| Layout | Four always-visible cards; compact grid on desktop and single column on mobile |
+| Transaction Only | `재고 초과 발급`, `발급 기록 1,000건` |
+| Pessimistic Lock | `재고 한도 유지`, `발급 기록 100건` |
+| Optimistic Lock | `충돌 감지`, `발급 기록 100건` |
+| Atomic Update | `재고 한도 유지`, `발급 기록 100건` |
+| Optimistic-lock note | Treat the recorded `100건` as a documented observed example in collapsed technical detail |
+| Non-goal | No grouped bar chart, strategy selector, playback, or dynamic result summary |
 
 Duplicate Coupon Issuance chart:
 
@@ -408,43 +421,35 @@ Redis chart context:
 - Redis Lua duplicate gate can compare Redis accepted user count and DB duplicate count.
 - Keep Redis/PostgreSQL source-of-truth boundary visible.
 
-## 12. Cause and Mechanism Explanation
+## 12. Strategy Explanation
 
-For Point Lost Update, cause, mechanism, guarantee, limitation, and appropriate use case should be consolidated into one or two compact disclosures near the bottom of the Point section. They must not appear as multiple large report-style sections.
+Point and Coupon strategy explanations should remain in one compact disclosure below the comparison cards.
 
-Use a short three-part structure:
+Use two concise lines per strategy:
 
-| Part | Purpose |
-| --- | --- |
-| Cause | What concurrency behavior produced the result |
-| Mechanism | How the selected strategy changes execution |
-| Result | Which invariant failed or was preserved |
+1. Explain how the strategy handles the concurrent update.
+2. State the most important trade-off or limitation in plain language.
 
-Example patterns:
+Point examples:
 
-- Lost Update Cause: `여러 요청이 같은 잔액을 읽고 각자 차감한 뒤, 나중 저장이 이전 저장을 덮어썼습니다.`
-- Pessimistic Lock Mechanism: `같은 row를 한 번에 하나의 트랜잭션만 수정하도록 직렬화합니다.`
-- Atomic Update Mechanism: `조건 확인과 갱신을 하나의 SQL UPDATE로 처리합니다.`
-- Unique Constraint Mechanism: `DB가 같은 user-coupon 조합의 두 번째 insert를 거부합니다.`
-- Redis Lua Mechanism: `Redis 안에서 재고와 중복 여부를 한 스크립트로 원자적으로 확인합니다.`
+- 비관적 락:
+  - `한 번에 하나의 요청만 수정하도록 락을 건다.`
+  - `정확하지만 충돌이 많으면 대기 시간이 늘어날 수 있다.`
+- 낙관적 락:
+  - `버전 충돌을 감지해 오래된 갱신을 거부한다.`
+  - `재시도가 없으면 일부 요청은 실패할 수 있다.`
+- 조건부 원자적 업데이트:
+  - `조건 확인과 차감을 하나의 UPDATE로 처리한다.`
+  - `단순한 수량 제어에 효과적이다.`
 
-Avoid long report-style paragraphs. Use two or three short blocks with direct copy.
+Coupon should adapt the same compact pattern to stock control. Do not restore separate `보장`, `한계`, or `적합한 경우` headings. Avoid long report-style paragraphs and do not claim universal performance superiority.
 
-## 13. Guarantee, Limitation, and Use Case
+## 13. Technical Detail Boundaries
 
-Every strategy detail panel should use the same three-part structure.
-
-| Strategy | Guarantee | Limitation | Appropriate use case |
-| --- | --- | --- | --- |
-| 트랜잭션만 적용 / Transaction Only | One request's local transaction commits or rolls back as a unit | Does not serialize shared-row concurrent updates | Failure reproduction or low-contention simple flows |
-| 비관적 락 / Pessimistic Lock | Serializes updates to the locked row | Lock waiting, lower throughput under high contention, potential deadlock concerns in larger workflows | High-contention cases where deterministic correctness matters |
-| 낙관적 락 / Optimistic Lock without retry | Detects version conflicts and rejects stale updates | No retry means many conflicts can fail; exact success counts may vary | Low to moderate contention where retry or conflict response is acceptable |
-| 조건부 원자적 업데이트 / Atomic Update | Checks condition and updates in one database statement | Query-centered logic; less flexible for complex domain rules | Simple counters such as point balance deduction or stock increment |
-| DB 유니크 제약조건 / Database Unique Constraint | Enforces final uniqueness for `(user_id, coupon_id)` | Does not solve stock overselling | Final duplicate-issuance guard |
-| Redis 카운터 / Redis Counter | Provides front-line stock-slot admission | Does not track duplicates; not durable truth; no Redis/PostgreSQL distributed transaction | High-traffic stock gate before DB persistence |
-| Redis Lua 스크립트 / Redis Lua Script | Atomically checks Redis-side stock and duplicate state | Still not durable truth; operational complexity; DB constraints still needed | Front-line admission control when stock and duplicate checks both matter |
-
-Do not claim universal performance superiority for any strategy.
+- Keep scheduling-dependent optimistic-lock behavior in the collapsed explanation.
+- Keep lock waiting and query-centered trade-offs concise.
+- Keep database uniqueness and Redis/PostgreSQL boundaries in their relevant later experiment sections.
+- Do not repeat the primary card outcome inside every technical paragraph.
 
 ## 14. Redis-Specific Section
 
@@ -507,16 +512,13 @@ Component ownership:
 | --- | --- |
 | Landing | Project title, one-line Korean message, experiment entry |
 | Experiment selector | Experiment group choice and short problem description |
-| Strategy selector | Relevant strategy choice and grouping for later experiments that use selection |
 | Conditions | Setup: initial balance, stock, requests, user pattern, retry, scenario-specific condition |
 | Playback | Transaction-only Lost Update failure mechanism beginning in Point Phase 4 |
-| Point problem definition | Concise explanation of the Lost Update problem |
-| Expected/actual summary | Primary correctness conclusion for later experiments where separately approved |
+| Problem summary | Concise explanation of the selected failure |
 | Point comparison cards | All Point strategy-specific outcomes and plain-language statuses |
-| Chart | Strategy comparison where a chart is the clearest fit for later experiments |
-| Tooltip/expandable details | Secondary counts such as successCount, failCount, Redis count, issued-user set size |
-| Cause section | Why the result happened and what invariant was affected |
-| Trade-off section | Guarantee, limitation, appropriate use case |
+| Coupon comparison cards | All Coupon database-strategy outcomes and plain-language statuses |
+| Expandable details | Secondary counts such as successCount, failCount, Redis count, issued-user set size |
+| Strategy explanation | Concise mechanism and most important trade-off |
 | Redis section | Redis/PostgreSQL boundary and Redis admission control |
 | Evidence section | Source verification |
 | Static-data disclosure/footer | Recorded-result and no-live-execution limitation |
@@ -524,6 +526,7 @@ Component ownership:
 Avoid repeating:
 
 - The same Point outcome in a separate summary and comparison card.
+- The same Coupon outcome in a separate dynamic summary and comparison card.
 - Request counts outside cards when they are already available in conditions.
 - Full environment metadata in the primary experiment area.
 - Redis/PostgreSQL boundary explanation in every Redis tooltip; show it once clearly in the Redis section.
@@ -531,7 +534,7 @@ Avoid repeating:
 - The full Point scenario context in every card; keep it in the collapsed conditions disclosure.
 - Calculated diagnostic values such as `expectedBalanceBySuccessCount` in the recruiter-facing view.
 
-The Point problem definition should stay concise. The comparison cards own only the high-signal outcomes; technical interpretation belongs in collapsed details.
+Point and Coupon problem summaries should stay concise. Their comparison cards own only the high-signal outcomes; technical interpretation belongs in collapsed details.
 
 ## 17. Responsive Design
 
@@ -544,13 +547,14 @@ Desktop:
 Tablet:
 
 - Use a single-column or balanced two-column layout depending on width.
-- Strategy selector may wrap by group.
 - Charts should use shorter labels or angled labels if needed.
 
 Mobile:
 
-- Stack content in this order: title/message, experiment tabs, Point problem definition, four comparison cards, collapsed details.
+- Point order: title/message, experiment tabs, problem summary, playback, four comparison cards, collapsed details.
+- Coupon order: title/message, experiment tabs, problem summary, four comparison cards, collapsed details.
 - The Point problem and strategy outcomes must be readable without horizontal scrolling.
+- The Coupon problem and strategy outcomes must be readable without horizontal scrolling.
 - Experiment selector can scroll horizontally if touch targets remain large.
 - Comparison cards should fit the viewport; use horizontal scroll only as a last resort and never for the primary conclusion.
 - Evidence links must have comfortable touch targets.
@@ -560,7 +564,7 @@ Mobile:
 Requirements:
 
 - Use semantic headings in page order.
-- Selectors must be keyboard-accessible and expose selected state.
+- Experiment tabs must be keyboard-accessible and expose selected state.
 - Focus states must be visible.
 - Playback controls must be buttons with screen-reader labels.
 - Evidence expand/collapse controls must be keyboard-accessible and expose expanded/collapsed state.
@@ -568,10 +572,10 @@ Requirements:
 - Do not communicate success or failure by color alone.
 - Ensure sufficient contrast for text, chart labels, and status indicators.
 - Respect reduced-motion preferences.
-- Provide a skip control for the Phase 4 playback.
+- Completed Point stage badges must be keyboard-accessible; they remain disabled during automatic progression.
 - Keep evidence links descriptive; avoid multiple identical `View source` labels without context.
 
-For screen readers, the compact Point problem definition should precede the four strategy cards, and each card should announce strategy name, result, and plain-language status before optional mechanism copy.
+For screen readers, the compact problem summary should precede the comparison cards, and each card should announce strategy name, plain-language status, result, and optional mechanism copy in that order.
 
 ## 19. Visual Direction
 
@@ -604,17 +608,17 @@ Expected states:
 
 | State | Behavior |
 | --- | --- |
-| Initial state | Point Lost Update selected; compact problem definition and all four cards visible |
+| Initial state | Point Lost Update selected; compact summary, idle balance, play action, and all four cards visible |
 | Experiment selected | Selected experiment content replaces the Point section |
 | Point details closed | Conditions, technical explanation, static-data limitation, and evidence remain collapsed |
-| Playback running | Replay/skip controls are visible; the stage sequence progresses automatically; experiment switching stops playback and resets it |
-| Playback skipped | The completed failure state appears immediately; comparison cards remain available |
-| Completed | Phase 4 playback shows the inconsistent balance and transitions attention to the unchanged comparison cards |
-| Reduced-motion mode | Playback is skipped or heavily simplified by default |
+| Coupon details closed | Conditions, strategy explanation, static-data limitation, and evidence remain collapsed |
+| Playback running | The stage sequence progresses automatically; stage badges remain non-interactive |
+| Completed | The result remains visible; stage badges become selectable and `↻ 다시 보기` preserves replay behavior |
+| Reduced-motion mode | Timed progression is skipped and the explanatory stages are exposed immediately |
 | Missing optional evidence | Show available evidence and omit missing link; do not block the experiment |
 | Invalid or incomplete static data | Show a clear fallback such as `검증되지 않은 데이터` and avoid rendering invented values |
 
-Because the app uses static verified data, network loading should not be emphasized. Lightweight loading states are acceptable only for code splitting or chart rendering.
+Because the app uses static verified data, network loading should not be emphasized. Lightweight loading states are acceptable only for code splitting.
 
 ## 21. Success Criteria
 
@@ -623,22 +627,24 @@ Because the app uses static verified data, network loading should not be emphasi
 - Duplicate Coupon Issuance is included in the first public release as the third experiment tab.
 - The first view communicates the three explored scenarios, the Point Lost Update problem, and all four Point outcomes.
 - Point outcomes are immediately distinguishable without a strategy selector or separate result summary.
-- When Phase 4 playback is introduced, it does not autoplay on page load and the result remains understandable without playing it.
+- Point playback does not autoplay on page load and the result remains understandable without playing it.
 - No component unnecessarily repeats the same metrics.
 - Phase 4 playback explains only the Lost Update failure mechanism and does not compare strategies, update charts, or update result summaries.
 - Variable optimistic-lock observations are labeled correctly.
 - Redis and PostgreSQL responsibilities are not conflated.
 - Evidence links are discoverable through a collapsed section without dominating the page.
 - Mobile users can understand the conclusion without horizontal scrolling.
-- The UI remains useful when animation is skipped.
+- The UI remains useful when timed motion is skipped.
 - Korean primary labels and English technical terms work together without visual clutter.
 - Scenario-specific conditions such as `without @Version` or `before unique constraint` remain visible.
 - The Point strategy comparison section reads as a compact set of cards instead of a chart-led report.
 - The Point comparison section uses plain-language statuses rather than `불변식` as its primary recruiter-facing label.
+- Coupon Overselling uses a compact problem summary and four always-visible database strategy cards.
+- Coupon Overselling uses no playback, strategy selector, grouped bar chart, or dynamic summary.
 - Technical conditions, limitations, and evidence remain available through collapsed details.
 
 ## 22. Open UX Decisions
 
 No blocking UX decisions remain for the MVP implementation roadmap.
 
-Do not reopen settled technical decisions: static Vite app, Vercel deployment, Recharts for charts, Korean primary UI language, recorded-result visualization, public GitHub evidence links, single-page experiment tabs, Point Lost Update as the default experiment, Duplicate Coupon Issuance in the first public release, explicit Lost Update failure playback, collapsed evidence sections, standardized Korean strategy labels, and separate Redis strategy grouping.
+Do not reopen settled technical decisions: static Vite app, Vercel deployment, Korean primary UI language, recorded-result visualization, public GitHub evidence links, single-page experiment tabs, Point Lost Update as the default experiment, Duplicate Coupon Issuance in the first public release, explicit Lost Update failure playback, no Coupon playback, always-visible Point and Coupon database strategy cards, collapsed evidence sections, standardized Korean strategy labels, and separate Redis strategy grouping.

@@ -33,7 +33,11 @@ For Point Lost Update, the first view should make these items immediately visibl
 - all four strategy outcomes,
 - concise plain-language result statuses.
 
-Conditions, technical cause, guarantees, limitations, use cases, the static-data limitation, and evidence should remain available as secondary information rather than competing with the first-view comparison. Later experiments may use selected-strategy views when separately approved.
+For Coupon Overselling, the first view should make this scan path immediate:
+
+`재고 100장 → 발급 기록 1,000건 → 재고 초과 발급 → 전략별 결과`
+
+Conditions, technical cause, guarantees, limitations, use cases, the static-data limitation, and evidence should remain available as secondary information rather than competing with the first-view comparison.
 
 The application should compare strategies without presenting any strategy as universally best. It should make correctness, contention, retry behavior, lock waiting, Redis/PostgreSQL boundaries, and operational complexity understandable at a portfolio-review level.
 
@@ -46,7 +50,7 @@ The primary audience is:
 - technical interviewers,
 - engineering managers.
 
-Many viewers may spend only a short time on the page. The Point first screen should prioritize the compact problem definition and four strategy outcomes; conditions and deeper technical reasoning should remain discoverable in collapsed secondary content.
+Many viewers may spend only a short time on the page. The Point first screen should prioritize the compact workspace summary, playback entry state, and four strategy outcomes; conditions and deeper technical reasoning should remain discoverable in collapsed secondary content.
 
 ## 5. Source Backend Project
 
@@ -166,18 +170,28 @@ The application should use static recorded data derived from backend repository 
 The planned Point interaction model is:
 
 1. Select or land on Point Lost Update.
-2. Read one compact problem definition.
-3. Compare all four strategy outcomes together without a strategy selector.
-4. Open conditions, technical explanation, static-data limitation, or evidence only when wanted.
-5. Beginning in Phase 4, optionally play a conceptual, stage-based Lost Update failure explanation that uses a small representative set of requests and advances automatically after an explicit start.
+2. Read one compact workspace summary.
+3. Optionally start a conceptual, stage-based Lost Update failure explanation.
+4. Compare all four strategy outcomes together without a strategy selector.
+5. Open conditions, technical explanation, static-data limitation, or evidence only when wanted.
 
-Point does not use a separate selected-strategy result summary or a chart-based comparison. Later experiments may use strategy selection, summaries, and charts where their approved designs benefit from them.
+Point does not use a separate selected-strategy result summary or a chart-based comparison.
 
-Phase 4 playback explains why the transaction-only Lost Update failure occurred: representative requests read the same initial balance, calculate independently, and later writes overwrite earlier deductions before the recorded inconsistent balance appears. It is a conceptual explanation, not a literal replay of all 15 concurrent requests, and it progresses automatically through visible stages once started. It is not a benchmark, live load test, performance visualization, or strategy-comparison animation.
+Phase 4 playback explains why the transaction-only Lost Update failure occurred: representative requests A and B read `10,000원`, each calculate `9,000원`, and B later saves the same value without knowing about A's change. The conceptual two-request flow therefore ends at `9,000원`; the recorded 15-request balance `8,000원` remains in the static strategy card. Playback progresses automatically through five visible stages after `▶ 재생`. After completion, reviewers may select a stage badge directly or use `↻ 다시 보기`. Reduced-motion mode skips timed progression and exposes the explanatory stages immediately. It is not a literal replay of all 15 concurrent requests, benchmark, live load test, performance visualization, or strategy-comparison animation.
 
 Playback owns the failure mechanism. The four static strategy cards own solution differences and recorded outcomes. Phase 4 must not add separate pessimistic-lock, optimistic-lock, or atomic-update playback, replay every experiment record, or animate coupon, duplicate-issuance, or Redis strategies.
 
-Playback remains out of scope for next-step navigation, pause/resume controls, and speed controls.
+Playback remains out of scope for next/previous navigation, pause/resume controls, speed controls, and timeline scrubbing.
+
+Playback is reserved for mechanisms that are difficult to understand quickly from final outcomes alone. It must not be added to an experiment merely for interaction or visual consistency.
+
+Coupon Overselling reuses the finalized recruiter-first comparison-card approach but does not receive playback. Its interaction model is:
+
+1. Read the compact problem summary: stock `100`, issued records `1,000`, and `재고 초과 발급`.
+2. Compare all four database strategy outcomes together without a strategy selector.
+3. Open conditions, strategy explanation, static-data limitation, or evidence only when wanted.
+
+The Coupon problem summary explains the failure. The four static strategy cards explain outcomes. Collapsed disclosures contain technical depth. Coupon uses no playback, grouped bar chart, strategy selector, or dynamic summary section.
 
 ## 8. Initial Scope
 
@@ -207,6 +221,9 @@ Coupon Overselling:
 - Strategy evidence exists for pessimistic lock, optimistic lock without retry, atomic update, Redis Counter, and Redis Lua.
 - Pessimistic lock, atomic update, Redis Counter, and Redis Lua have tests asserting stock-sized success and final persisted consistency.
 - Optimistic lock has documented observed values of `successCount = 100`, `failCount = 900`, `issuedCouponCountByCoupon = 100`, `finalIssuedQuantity = 100`, but the code and docs should be interpreted conservatively as no-oversell/conflict-detection evidence without a universal no-retry full-exhaustion guarantee.
+- The recruiter-first presentation uses a compact problem summary and four always-visible database strategy cards.
+- Conditions, strategy explanation, static-data limitation, and evidence remain collapsed by default.
+- Coupon Overselling does not use playback, a strategy selector, a grouped bar chart, or a dynamic summary section.
 
 Coupon Duplicate Issuance:
 
@@ -302,13 +319,15 @@ This document is not an implementation guide. It defines the product context, ev
 The first visualizer version should satisfy these criteria:
 
 - A reviewer can understand the selected problem within about ten seconds.
-- The Point problem definition and all four Point strategy outcomes are immediately visible.
+- The Point workspace summary, playback entry state, and all four Point strategy outcomes are immediately visible.
+- Coupon Overselling communicates `재고 100장 → 발급 기록 1,000건 → 재고 초과 발급 → 전략별 결과` within a few seconds.
 - Displayed values match verified backend test evidence or are clearly marked as `TODO`/`Unverified`.
 - Test conditions remain discoverable near the result values and may be collapsed by default.
 - Scenario-specific conditions such as `before @Version` or `before unique constraint` remain available with the result context.
 - Strategy trade-offs are understandable without reading all backend documents first.
 - The UI does not imply live backend execution.
-- Phase 4 playback, when introduced, clearly explains the Lost Update overwrite sequence and then returns attention to the static strategy cards.
+- Phase 4 playback clearly explains the Lost Update overwrite sequence and then returns attention to the static strategy cards.
+- Playback is used only where final outcomes do not explain the failure mechanism quickly enough.
 - The recorded-data limitation remains discoverable as secondary information without dominating the hero.
 - The application works on desktop and mobile.
 - The application can be built with `npm run build` and deployed as static `dist` output on Vercel.
@@ -412,9 +431,14 @@ Risks:
 - The public backend repository URL is static MVP metadata and does not require an environment variable.
 - Korean-first names and English supporting names should both be represented.
 - Current test executability is evidence metadata rather than primary result logic.
-- Point Lost Update uses a recruiter-first compact problem definition and four always-visible strategy cards.
+- Point Lost Update uses a recruiter-first compact workspace summary and four always-visible strategy cards.
 - Point Lost Update does not use a chart-based comparison, a strategy selector, or a separate dynamic result summary.
 - Point Phase 3 contains no request-flow placeholder; Phase 4 adds the area only with meaningful working playback.
 - Point Phase 4 playback explains only the transaction-only failure mechanism; strategy cards continue to explain the solutions.
-- Point Phase 4 does not add strategy-specific playback, replay every experiment record, or visualize performance.
+- Point Phase 4 uses five visible stages, automatic progression, replay, post-completion stage selection, and reduced-motion handling.
+- Point Phase 4 does not add strategy-specific playback, next/previous controls, pause/resume, speed controls, timeline scrubbing, replay every experiment record, or visualize performance.
+- Playback is reserved for failure mechanisms that cannot be understood quickly from outcomes alone.
+- Coupon Overselling reuses the finalized Point comparison-card pattern without playback.
+- Coupon Overselling uses a compact problem summary, four always-visible database strategy cards, and collapsed conditions, strategy explanation, and evidence.
+- Coupon Overselling does not use a strategy selector, grouped bar chart, or dynamic summary section.
 - The static recorded-data limitation belongs in secondary disclosure or footer content, not the hero.
