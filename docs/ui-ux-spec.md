@@ -2,19 +2,20 @@
 
 ## 1. UX Overview
 
-Flash Concurrency Visualizer is a static interactive explanation of recorded backend concurrency experiments from Flash Coupon Payment. The interface should help reviewers understand what was tested, what should have happened, what actually happened, and why a selected strategy changed the result.
+Flash Concurrency Visualizer is a static interactive explanation of recorded backend concurrency experiments from Flash Coupon Payment. The interface should help reviewers understand what was tested, what should have happened, what actually happened, and why different strategies changed the result.
 
 The product is not a live test runner. It replays verified recorded results from backend JUnit concurrency tests and project documents. The UI must make this clear without making the page feel defensive or overly legalistic.
 
 Primary reviewer journey:
 
-1. Land on the page and understand that this is a recorded-result concurrency visualizer.
-2. Pick an experiment group: Point Lost Update, Coupon Overselling, or Duplicate Coupon Issuance.
-3. Pick a strategy or failure-reproduction scenario.
-4. Review the scenario conditions.
-5. Optionally start or skip a short representative request-flow animation.
-6. See the expected-vs-actual correctness conclusion immediately.
-7. Compare strategies, read the mechanism and trade-off, and open supporting evidence if desired.
+1. Land on the page and see the compact project message and three experiment groups.
+2. Start with Point Lost Update by default.
+3. Understand the Point problem through one concise definition.
+4. Compare all four Point strategy outcomes together without selecting a strategy.
+5. Open conditions, technical explanation, the static-data limitation, or evidence only when more depth is wanted.
+6. In Phase 4, optionally play a meaningful request-flow explanation without changing the already-visible card outcomes.
+
+Later coupon experiments may use strategy selection and expected-vs-actual summaries where their separately approved designs require them.
 
 The interface should feel like an interactive technical explanation, not a generic analytics dashboard and not an animation showcase.
 
@@ -38,7 +39,7 @@ The UI should use Korean as the primary display language and English technical t
 
 ## 3. Information Architecture
 
-Recommended MVP structure: a single-page application with near-top experiment tabs and strategy selectors.
+Recommended MVP structure: a single-page application with near-top experiment tabs and experiment-specific comparison patterns.
 
 Decision:
 
@@ -50,62 +51,56 @@ Decision:
 - Keep the structure route-compatible for a possible future extension, but do not make routing part of the current UX requirement.
 - Include Duplicate Coupon Issuance in the first public release as the third experiment tab. It demonstrates a distinct invariant: uniqueness of the user-coupon pair.
 
-Recommended page structure:
+Point Lost Update page structure:
 
-1. Landing section.
-2. Experiment selector.
-3. Strategy selector.
-4. Selected experiment workspace.
-5. Database strategy comparison.
-6. Redis-specific section where relevant.
-7. Evidence links.
-8. Next experiment navigation.
+1. Compact project title and one-line Korean message.
+2. Three experiment tabs.
+3. Compact Point Lost Update problem definition.
+4. Four compact strategy comparison cards.
+5. Optional collapsed details for experiment conditions, technical explanation, static-data limitation, and code/evidence.
 
 The first visible experiment should default to Point Lost Update because it has the smallest scenario and is easiest to understand quickly. Duplicate Coupon Issuance should be available from the first release, but it should not overcrowd the first viewport.
 
 ## 4. Primary User Flow
 
-Complete interaction flow:
+Point Lost Update interaction flow:
 
-1. Landing and project explanation: mandatory.
-2. Experiment selection: mandatory, default selected.
-3. Strategy selection: mandatory, default to failure-reproduction scenario for the selected experiment.
-4. Experiment conditions: mandatory and always visible near the result.
-5. Recorded-request animation: optional to start; must support explicit play, replay, skip, and reduced-motion behavior.
-6. Expected vs actual summary: mandatory and accessible without playing the animation.
-7. Strategy comparison section: mandatory for database strategies when comparable data exists.
-8. Cause explanation: mandatory, short.
-9. Guarantee and limitation: mandatory for selected strategy.
-10. Appropriate use case: mandatory for solution strategies; concise for baseline/failure reproduction.
-11. Evidence links: mandatory when evidence exists; collapsed by default on desktop and mobile.
-12. Next experiment navigation: mandatory at section end.
+1. See the project title and the message `같은 요청도 적용한 전략에 따라 결과가 달라집니다.`
+2. See the three explored concurrency scenarios.
+3. Understand the Point Lost Update problem in one concise statement.
+4. Compare all four strategy outcomes without selecting a strategy or moving attention to another section.
+5. Open conditions, technical explanation, static-data limitation, or code/evidence only when more depth is wanted.
 
-Skippable or collapsible:
+Collapsed by default:
 
-- Animation playback can be skipped or never started.
-- Test environment details should be collapsed.
-- Evidence link groups should be collapsed on both desktop and mobile.
-- Supporting counts can appear in comparison cards, chart tooltips, or expandable details.
+- Experiment conditions and test environment details.
+- Cause, mechanism, guarantee, limitation, and appropriate use case.
+- Static recorded-data limitation.
+- Evidence link groups.
 
-The user should not need to read the comparison section before understanding the result. The expected-vs-actual summary owns the primary conclusion.
+The compact Point problem statement owns the problem definition. The four strategy comparison cards own all Point strategy-specific outcomes.
 
 ## 5. Landing Section
 
 The first viewport should be compact and direct.
 
-Required content:
+Required first-view content:
 
 - Project title: `Flash Concurrency Visualizer`
-- One-sentence purpose: `백엔드 동시성 실험 결과를 기록된 테스트 결과 기반으로 시각화합니다.`
-- Supporting English line: `Recorded-result visualization for backend concurrency experiments.`
-- Recorded-result disclaimer: `이 화면은 backend JUnit 동시성 테스트에서 기록된 결과를 재생합니다. 브라우저에서 실시간 부하 테스트를 실행하지 않습니다.`
+- One concise Korean message: `같은 요청도 적용한 전략에 따라 결과가 달라집니다.`
 - Near-top experiment tabs:
   - `Point Lost Update`
   - `Coupon Overselling`
   - `Duplicate Coupon Issuance`
-- Primary action: `첫 실험 보기` or `Point Lost Update 보기`
 
-The landing section should not become a long portfolio introduction. Point Lost Update should be selected by default, and the first viewport should leave a hint of the selected experiment workspace visible below the landing content on typical desktop screens.
+Remove these items from the primary first-view hierarchy:
+
+- `RECORDED CONCURRENCY EXPERIMENTS`
+- `Recorded-result visualization for backend concurrency experiments.`
+- `브라우저에서 실시간 부하 테스트를 실행하지 않습니다.`
+- `EXPERIMENT`
+
+The static recorded-data limitation must remain available in a secondary disclosure or footer. The landing section should not become a portfolio introduction, and the Point problem and strategy outcomes should begin near the top of the page.
 
 ## 6. Experiment Selector
 
@@ -135,9 +130,9 @@ Strategies must be filtered by selected experiment.
 
 Point Lost Update:
 
-- Baseline:
+- Do not use a separate strategy selector or strategy tabs.
+- Show all four strategies together as comparison cards:
   - `트랜잭션만 적용` / `Transaction Only`
-- Database strategies:
   - `비관적 락` / `Pessimistic Lock`
   - `낙관적 락` / `Optimistic Lock`
   - `조건부 원자적 업데이트` / `Atomic Update`
@@ -163,12 +158,12 @@ Duplicate Coupon Issuance:
 - Redis strategies:
   - `Redis Lua 스크립트` / `Redis Lua Script`
 
-Presentation:
+Presentation for coupon experiments:
 
 - Use grouped segmented controls or grouped button rows: `Baseline`, `Database`, `Redis`.
 - Keep the selected strategy visually prominent.
 - Avoid a crowded single row when many strategies exist. On mobile, groups can stack vertically.
-- Switching strategies should update conditions, animation state, summary, explanation, chart highlight, and evidence links.
+- Switching strategies should update conditions, animation state, summary, explanation, chart highlight, and evidence links where a later experiment uses strategy selection.
 - Switching strategies during playback should stop the current animation, load the new strategy state, and show a `재생` action rather than continuing mismatched animation.
 - Do not make the user replay animation every time they switch strategies. Stable setup, summary, chart, and explanation should remain available without animation playback.
 
@@ -198,8 +193,8 @@ Display rules:
 
 ## 8. Experiment Conditions
 
-Conditions should be compact, scannable, and always available near the selected result.
-For Point Lost Update, prefer progressive disclosure so the first screen stays focused on the result hook.
+Conditions should be compact and scannable.
+For Point Lost Update, place all conditions inside one collapsed disclosure near the lower part of the Point section.
 
 Primary condition chips or rows:
 
@@ -241,15 +236,21 @@ Do not display all environment metadata in the primary condition area.
 
 ## 9. Recorded Request Animation
 
+Point Phase 3 direction:
+
+- Do not render a static request-flow placeholder.
+- Do not reserve a large empty request-flow area.
+- The request-flow area returns in Phase 4 only when it provides a meaningful short animation or playback experience.
+
 Purpose:
 
 - Explain the request flow conceptually.
 - Make concurrency behavior visible without implying live execution.
-- Prepare the user for the expected-vs-actual summary.
+- Add meaningful flow context to the already-visible Point problem and strategy cards.
 
 Required copy near the animation:
 
-`단순화된 재생입니다. 실제 기록된 요청 수는 조건과 차트에 표시되며, 브라우저에서 DB 요청을 실행하지 않습니다.`
+`단순화된 재생입니다. 실제 기록된 결과는 카드와 상세 정보에 표시되며, 브라우저에서 DB 요청을 실행하지 않습니다.`
 
 Recommended supporting message:
 
@@ -259,28 +260,28 @@ Stages:
 
 | Stage | Meaning |
 | --- | --- |
-| idle | Strategy selected, stable setup and result available, ready for explicit playback |
+| idle | Point problem and cards are visible, ready for explicit playback |
 | ready | Representative request nodes are queued |
 | simultaneous start | Requests begin together |
 | read/check | Requests read balance, stock, duplicate state, or Redis state |
 | update/issue attempt | Requests attempt deduction, stock increment, insert, Redis admission, or Lua script |
 | success/conflict/failure | Nodes split into success, conflict, sold-out, duplicate, or overwritten paths |
-| completed | Summary appears and chart highlight updates |
+| completed | Playback completes while the Point problem and cards remain visible |
 
 Animation requirements:
 
 - Use a small representative number of visual nodes, around 8 to 12.
 - Never draw 100 or 1,000 individual nodes.
-- Actual recorded counts must remain in text, chart data, or tooltip details.
+- Actual recorded counts must remain in the comparison cards or collapsed details.
 - Recommended duration: 1.8 to 2.8 seconds.
 - Do not autoplay.
-- Initial page load should display experiment setup, summary, chart, and explanation without motion.
+- Initial page load should display the compact Point problem and all four cards without motion.
 - Start animation only through an explicit user action such as `기록된 요청 흐름 재생`.
 - Provide `Replay` and `Skip` controls.
 - Respect `prefers-reduced-motion`: skip animation by default and show the completed state.
-- The expected-vs-actual result must remain understandable even if the animation is never played.
-- Animation must not block access to the expected-vs-actual conclusion.
-- When switching experiments or strategies, reset animation to a stable idle state.
+- The Point problem and strategy outcomes must remain understandable even if the animation is never played.
+- Animation must not block access to the comparison cards.
+- When switching experiments, reset animation to a stable idle state.
 - Do not imply that the play button runs a live Java concurrency test.
 - Do not use animation duration or node speed as a performance benchmark.
 - Do not animate lock waiting in a way that implies measured latency unless the value is explicitly documented and labeled.
@@ -295,37 +296,31 @@ Strategy-specific animation cues:
 - Redis Counter: Redis admits only stock-sized slots before PostgreSQL persistence.
 - Redis Lua: stock and duplicate checks happen atomically inside Redis before PostgreSQL persistence.
 
+Point Phase 4 minimum:
+
+- The working playback must make the transaction-only Lost Update causality understandable: overlapping reads of the same balance, competing writes, and an overwritten deduction.
+- It must not update a chart, create or update a selected-strategy summary, or replace the four card outcomes.
+- Additional strategy cues are optional only if they improve the causal explanation without turning the playback into another strategy selector.
+
 ## 10. Expected vs Actual Summary
 
-This is the most important post-animation component.
+Point Lost Update does not use a separate selected-strategy result summary.
 
-Placement:
+Point ownership:
 
-- Immediately below or beside the animation.
-- Visible without scrolling on desktop after animation completion.
-- On mobile, it should appear directly below the animation and above the chart.
+- The compact Point problem definition explains the concurrency failure.
+- The four comparison cards own expected and recorded strategy outcomes.
+- Changing or emphasizing a card must not update a separate result panel elsewhere on the page.
 
-Visual hierarchy:
+Reason:
 
-- Large conclusion label.
-- Two or three high-signal values.
-- Small condition reminder.
-- Avoid dense metric tables.
+- A result above a control makes the viewer move attention backward.
+- The same strategy result should not be repeated in a separate summary and comparison card.
+- Recruiter-facing comprehension is faster when all outcomes remain visible together.
 
-Point fields:
+Later experiment guidance:
 
-- Expected final balance under the recorded scenario conditions.
-- Observed final balance.
-- Conclusion:
-  - `Lost Update 발생`
-  - or `잔액 불변식 유지`
-
-Point context requirement:
-
-- The expected final balance must be shown as scenario-specific, not universal.
-- Required nearby condition context: initial balance `10,000`, deduction amount `1,000`, concurrent requests `15`, maximum successful deductions `10`.
-- Recommended concise label: `이 실험 조건의 기대 최종 잔액: 0원`.
-- Keep supporting success/failure counts outside the primary summary unless they are needed in a tooltip or expandable detail.
+- Coupon and duplicate experiments may still use an expected-vs-actual summary if their later approved designs benefit from one.
 
 Coupon Overselling fields:
 
@@ -363,12 +358,25 @@ Point Lost Update strategy comparison cards:
 
 | Item | Recommendation |
 | --- | --- |
-| Card content | strategy name, expected result, recorded result, invariant match, one short mechanism or conclusion, required caveats |
+| Card content | strategy name, primary outcome, plain-language status, one short mechanism or conclusion when useful |
 | Layout | Compact grid on desktop, single-column cards on mobile |
-| Hook | Lead with `15건 모두 성공으로 기록됐지만 최종 잔액은 8,000원이었습니다.` for Transaction Only |
-| Optimistic-lock note | Label the numeric result as one documented observed execution example and keep the no-retry / run-variability caveat visible |
-| Caveat | Expected balance `0` comes from the recorded condition: initial balance `10,000`, deduction amount `1,000`, concurrent requests `15`, and maximum successful deductions `10` |
+| Transaction Only | `15건 성공 · 잔액 8,000원`, `Lost Update 발생` or `문제 발생` |
+| Pessimistic Lock | `10건 성공 · 잔액 0원`, `정상 차감` |
+| Optimistic Lock | `잔액 7,000원 · 실행 예시`, `충돌 감지` |
+| Atomic Update | `10건 성공 · 잔액 0원`, `정상 차감` |
+| Optimistic-lock note | Do not present `7,000원` as deterministic; move no-retry and run-variability detail into collapsed technical content |
 | Non-goal | Do not present Point as a chart-led report or a separate `수치로 보기` table |
+
+Point card copy rules:
+
+- Use `결과`, not repeated `기록된 결과`.
+- Do not use `불변식` as a primary recruiter-facing status label.
+- Prefer direct labels such as `문제 발생`, `정상 차감`, and `충돌 감지`.
+- Keep `잔액 불변식` only in optional technical details.
+- Remove report-style content such as `성공 수 기준 잔액 -5,000원`.
+- Do not repeat execution-condition labels inside every card.
+- Do not show a long optimistic-lock caveat block inside the card.
+- Keep the four cards substantially more compact than the technical details below.
 
 Coupon Overselling chart:
 
@@ -401,6 +409,8 @@ Redis chart context:
 - Keep Redis/PostgreSQL source-of-truth boundary visible.
 
 ## 12. Cause and Mechanism Explanation
+
+For Point Lost Update, cause, mechanism, guarantee, limitation, and appropriate use case should be consolidated into one or two compact disclosures near the bottom of the Point section. They must not appear as multiple large report-style sections.
 
 Use a short three-part structure:
 
@@ -487,43 +497,48 @@ Placement:
 
 Do not expose local repository paths in the rendered UI. Local `repositoryPath` values are development metadata only. GitHub URLs are the user-facing evidence paths.
 
+The static recorded-data limitation should appear in a nearby collapsed disclosure or secondary footer, not in the hero. It should state that the page visualizes recorded backend tests and does not execute live concurrency traffic in the browser.
+
 ## 16. Content Hierarchy and Duplication Rules
 
 Component ownership:
 
 | Component | Owns |
 | --- | --- |
-| Landing | Project purpose, recorded-result disclaimer, experiment entry |
+| Landing | Project title, one-line Korean message, experiment entry |
 | Experiment selector | Experiment group choice and short problem description |
-| Strategy selector | Relevant strategy choice and grouping |
+| Strategy selector | Relevant strategy choice and grouping for later experiments that use selection |
 | Conditions | Setup: initial balance, stock, requests, user pattern, retry, scenario-specific condition |
-| Animation | Conceptual request flow |
-| Expected/actual summary | Primary correctness conclusion |
-| Point comparison cards | Strategy comparison for Point Lost Update |
+| Animation | Conceptual request flow beginning in Point Phase 4 |
+| Point problem definition | Concise explanation of the Lost Update problem |
+| Expected/actual summary | Primary correctness conclusion for later experiments where separately approved |
+| Point comparison cards | All Point strategy-specific outcomes and plain-language statuses |
 | Chart | Strategy comparison where a chart is the clearest fit for later experiments |
 | Tooltip/expandable details | Secondary counts such as successCount, failCount, Redis count, issued-user set size |
 | Cause section | Why the result happened and what invariant was affected |
 | Trade-off section | Guarantee, limitation, appropriate use case |
 | Redis section | Redis/PostgreSQL boundary and Redis admission control |
 | Evidence section | Source verification |
+| Static-data disclosure/footer | Recorded-result and no-live-execution limitation |
 
 Avoid repeating:
 
-- Request count in summary if it is already in conditions.
-- Success/failure counts in both summary and point comparison card copy.
+- The same Point outcome in a separate summary and comparison card.
+- Request counts outside cards when they are already available in conditions.
 - Full environment metadata in the primary experiment area.
 - Redis/PostgreSQL boundary explanation in every Redis tooltip; show it once clearly in the Redis section.
 - Long strategy descriptions in selector labels.
-- The full point scenario context in every component; keep it near the summary and chart, then use concise labels elsewhere.
+- The full Point scenario context in every card; keep it in the collapsed conditions disclosure.
+- Calculated diagnostic values such as `expectedBalanceBySuccessCount` in the recruiter-facing view.
 
-The expected-vs-actual summary should stay concise. Supporting metrics belong in the Point comparison cards, tooltips, or expandable details.
+The Point problem definition should stay concise. The comparison cards own only the high-signal outcomes; technical interpretation belongs in collapsed details.
 
 ## 17. Responsive Design
 
 Desktop:
 
-- Two-column experiment workspace is acceptable: result hook/summary on one side and comparison cards or explanation on the other.
-- Keep selectors visible near the top.
+- Use a compact card grid that keeps all four Point outcomes visible together.
+- Keep the three experiment tabs visible near the top.
 - Evidence appears as a collapsed section with a clear `근거 자료 보기` control.
 
 Tablet:
@@ -534,12 +549,10 @@ Tablet:
 
 Mobile:
 
-- Stack content in this order: experiment selector, strategy selector, expected/actual summary, conditions, animation placeholder, comparison cards, explanation, evidence.
-- The primary conclusion must be readable without horizontal scrolling.
+- Stack content in this order: title/message, experiment tabs, Point problem definition, four comparison cards, collapsed details.
+- The Point problem and strategy outcomes must be readable without horizontal scrolling.
 - Experiment selector can scroll horizontally if touch targets remain large.
-- Strategy groups should stack vertically.
 - Comparison cards should fit the viewport; use horizontal scroll only as a last resort and never for the primary conclusion.
-- Animation should use fewer visual nodes.
 - Evidence links must have comfortable touch targets.
 
 ## 18. Accessibility
@@ -558,7 +571,7 @@ Requirements:
 - Provide a skip control for animations.
 - Keep evidence links descriptive; avoid multiple identical `View source` labels without context.
 
-For screen readers, the expected-vs-actual summary should announce the conclusion before secondary metrics.
+For screen readers, the compact Point problem definition should precede the four strategy cards, and each card should announce strategy name, result, and plain-language status before optional mechanism copy.
 
 ## 19. Visual Direction
 
@@ -591,12 +604,12 @@ Expected states:
 
 | State | Behavior |
 | --- | --- |
-| Initial state | Point Lost Update selected, Transaction Only selected, animation idle, conditions visible |
-| Experiment selected | Strategy list updates to relevant strategies; default strategy selected |
-| Strategy selected | Summary, conditions, animation placeholder, comparison cards, explanation, and evidence update |
-| Animation running | Replay/skip controls visible; strategy switching stops playback and resets for new strategy |
-| Animation skipped | Completed state appears immediately; summary remains shown |
-| Completed | Expected-vs-actual summary and comparison cards visible |
+| Initial state | Point Lost Update selected; compact problem definition and all four cards visible |
+| Experiment selected | Selected experiment content replaces the Point section |
+| Point details closed | Conditions, technical explanation, static-data limitation, and evidence remain collapsed |
+| Animation running | In Phase 4, replay/skip controls are visible; experiment switching stops playback and resets it |
+| Animation skipped | Phase 4 completed state appears immediately; comparison cards remain available |
+| Completed | Phase 4 animation completes without hiding the comparison cards |
 | Reduced-motion mode | Animation is skipped or heavily simplified by default |
 | Missing optional evidence | Show available evidence and omit missing link; do not block the experiment |
 | Invalid or incomplete static data | Show a clear fallback such as `검증되지 않은 데이터` and avoid rendering invented values |
@@ -608,11 +621,11 @@ Because the app uses static verified data, network loading should not be emphasi
 - The first experiment is understandable within about ten seconds.
 - Point Lost Update is selected by default in a single-page tab layout.
 - Duplicate Coupon Issuance is included in the first public release as the third experiment tab.
-- Expected and observed values are immediately distinguishable.
-- Baseline and solution strategies are easy to switch.
-- Animation does not autoplay and the result remains understandable without playing it.
+- The first view communicates the three explored scenarios, the Point Lost Update problem, and all four Point outcomes.
+- Point outcomes are immediately distinguishable without a strategy selector or separate result summary.
+- When Phase 4 playback is introduced, it does not autoplay and the result remains understandable without playing it.
 - No component unnecessarily repeats the same metrics.
-- Animation is clearly representational.
+- Phase 4 playback is clearly representational and does not update charts or result summaries.
 - Variable optimistic-lock observations are labeled correctly.
 - Redis and PostgreSQL responsibilities are not conflated.
 - Evidence links are discoverable through a collapsed section without dominating the page.
@@ -621,7 +634,8 @@ Because the app uses static verified data, network loading should not be emphasi
 - Korean primary labels and English technical terms work together without visual clutter.
 - Scenario-specific conditions such as `without @Version` or `before unique constraint` remain visible.
 - The Point strategy comparison section reads as a compact set of cards instead of a chart-led report.
-- The Point comparison section communicates expected, recorded, and invariant-match status without a separate `수치로 보기` table.
+- The Point comparison section uses plain-language statuses rather than `불변식` as its primary recruiter-facing label.
+- Technical conditions, limitations, and evidence remain available through collapsed details.
 
 ## 22. Open UX Decisions
 

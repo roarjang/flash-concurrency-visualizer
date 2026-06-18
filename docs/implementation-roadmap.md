@@ -51,7 +51,7 @@ Do not reopen these decisions during MVP implementation.
 
 ## 3. Proposed Frontend Architecture
 
-The frontend repository currently contains planning documents only. The structure below is a suggested future `src` layout once implementation begins.
+The structure below is a suggested target `src` layout for later implementation work.
 
 Recommended approach: clear feature-based boundaries with a small shared layer. Do not introduce routing, global state libraries, a heavy design system, or a heavy animation dependency for the MVP.
 
@@ -78,12 +78,13 @@ flash-concurrency-visualizer/
         TradeoffPanel.tsx
         EvidenceDisclosure.tsx
       point/
+        PointProblemDefinition.tsx
         PointComparisonCards.tsx
       charts/
         StrategyComparisonChart.tsx
         RedisGateChart.tsx
         ChartTextAlternative.tsx
-      animation/
+      animation/                    # Introduced only in approved animation phases
         RequestFlowAnimation.tsx
         animationStages.ts
       redis/
@@ -108,12 +109,12 @@ flash-concurrency-visualizer/
 
 Architecture guidance:
 
-- `app/` owns selected experiment, selected strategy, and animation reset behavior.
+- `app/` owns the selected experiment. It owns selected-strategy state only for later experiments that use a selector.
 - `data/` contains verified static records only after Phase 1.
 - `types/` defines the contract between data and UI.
 - `components/experiment/` owns the shared explanation structure.
 - `charts/` isolates Recharts usage and chart text alternatives.
-- `animation/` owns representative request-flow rendering and state.
+- `animation/` owns working request-flow playback and state beginning in Phase 4; Phase 3 does not render an animation shell or placeholder.
 - `redis/` keeps Redis front-line gate explanation separate from database strategy comparison.
 
 ## 4. Static Data Model Plan
@@ -158,25 +159,27 @@ Shared components should support all three experiment groups without forcing eve
 Shared components:
 
 - Application shell.
-- Landing section with recorded-result disclaimer.
+- Compact title and one-line Korean message.
 - Experiment tabs.
-- Strategy selector with Baseline, Database, and Redis groupings.
+- Strategy selector with Baseline, Database, and Redis groupings for later experiments that use selection.
 - Experiment condition display.
-- Expected-vs-actual summary.
+- Expected-vs-actual summary for later experiments where separately approved.
+- Point problem definition.
 - Point comparison cards.
 - Chart container and chart text alternative.
 - Cause and mechanism explanation.
 - Guarantee, limitation, and use-case panel.
 - Collapsed evidence disclosure.
 - Responsive layout shell.
-- Representative request-flow animation shell.
+- Working request-flow playback introduced only in approved animation phases.
 
 Component ownership should follow the UX duplication rules:
 
 - Conditions own setup values.
-- Animation owns conceptual request flow.
-- Summary owns the primary correctness conclusion.
-- Point comparison cards own the Point strategy comparison hook.
+- Animation owns conceptual request flow beginning in Point Phase 4.
+- Summary owns the primary correctness conclusion only where a later experiment design requires it.
+- Point problem definition owns the concise Lost Update explanation.
+- Point comparison cards own all Point strategy-specific outcomes.
 - Chart owns strategy comparison where a chart is the right fit.
 - Tooltips and expandable details own secondary counts.
 - Explanation owns cause and mechanism.
@@ -300,7 +303,7 @@ Build the single-page structure and state flow that all experiments will use.
 
 ### Scope
 
-Landing section, experiment tabs, default selection, strategy selection state, and animation reset behavior.
+Landing section, experiment tabs, default experiment selection, and state boundaries for later experiment-specific controls.
 
 ### Files or areas likely to be affected
 
@@ -317,17 +320,19 @@ Suggested future areas:
 
 - Implement compact landing content:
   - `Flash Concurrency Visualizer`
-  - Korean one-sentence purpose.
-  - Recorded-result disclaimer.
+  - `같은 요청도 적용한 전략에 따라 결과가 달라집니다.`
   - Experiment tabs near the top.
+- Remove `RECORDED CONCURRENCY EXPERIMENTS`, the English supporting purpose line, the primary live-test disclaimer, and the `EXPERIMENT` eyebrow from the first-view hierarchy.
+- Keep the static recorded-data limitation available in secondary content rather than the hero.
 - Add experiment tabs:
   - Point Lost Update.
   - Coupon Overselling.
   - Duplicate Coupon Issuance.
 - Select Point Lost Update by default.
 - Switch experiment content without route navigation.
-- Select a default baseline strategy for each experiment.
-- Reset animation to stable idle state when experiment or strategy changes.
+- Do not create Point strategy-selection state; all four Point outcomes will be shown together in Phase 3.
+- Allow later coupon experiments to add selected-strategy state within their own approved phases.
+- Do not create Point animation state or reserve request-flow layout in Phase 2.
 - Keep state URL-independent for the MVP.
 - Keep internal data and component boundaries route-compatible for a future extension without adding routing.
 
@@ -336,16 +341,16 @@ Suggested future areas:
 - Point Lost Update is selected on first load.
 - All three experiment tabs are present.
 - Duplicate Coupon Issuance appears as the third tab.
-- Switching tabs updates available strategies and selected content.
+- Switching tabs updates the selected experiment content; later experiments may expose their own strategy controls.
 - No route-based experiment pages are required.
-- The page communicates that results are recorded and not live tests.
+- The first view stays compact while the recorded-data limitation remains discoverable in secondary content.
 
 ### Explicit Non-Goals
 
 - Do not implement full experiment content yet.
 - Do not implement animation playback.
 - Do not add routing.
-- Do not add persistence for selected tabs or strategies.
+- Do not add persistence for selected tabs or later strategy controls.
 
 ### Suggested Commit Boundary
 
@@ -355,11 +360,11 @@ Suggested future areas:
 
 ### Goal
 
-Implement the complete static Point Lost Update experience without animation.
+Implement a recruiter-first static Point Lost Update experience that communicates the problem and four strategy outcomes within about 30 seconds.
 
 ### Scope
 
-Point strategy selector, expected-vs-actual summary, compact conditions disclosure, meaning-focused strategy comparison cards, cause and mechanism, trade-off panel, and evidence disclosure.
+Hero simplification, three scenario tabs, compact Point problem definition, four compact strategy comparison cards, and consolidated secondary disclosures.
 
 ### Files or areas likely to be affected
 
@@ -367,48 +372,60 @@ Suggested future areas:
 
 - `src/components/experiment/ExperimentWorkspace.tsx`
 - `src/components/experiment/ExperimentConditions.tsx`
-- `src/components/experiment/ExpectedActualSummary.tsx`
+- `src/components/point/PointProblemDefinition.tsx`
 - `src/components/point/PointComparisonCards.tsx`
 - `src/components/experiment/CauseMechanism.tsx`
 - `src/components/experiment/TradeoffPanel.tsx`
 - `src/components/experiment/EvidenceDisclosure.tsx`
-- `src/data/experiments.ts`
+- `src/components/layout/LandingSection.tsx`
 
 ### Tasks
 
-- Show Point strategies:
-  - `트랜잭션만 적용` / Transaction Only.
-  - `비관적 락` / Pessimistic Lock.
-  - `낙관적 락` / Optimistic Lock.
-  - `조건부 원자적 업데이트` / Atomic Update.
-- Display Point scenario conditions:
+- Simplify the first-view hero:
+  - Keep `Flash Concurrency Visualizer`.
+  - Keep only `같은 요청도 적용한 전략에 따라 결과가 달라집니다.` as primary supporting copy.
+  - Remove the English supporting line, recorded-experiment eyebrow, primary live-test disclaimer, and experiment eyebrow from the first-view hierarchy.
+  - Move the static recorded-data limitation into secondary disclosure or footer content.
+- Keep all three scenario tabs near the top.
+- Add a compact Point problem definition without strategy-specific values.
+- Remove the separate selected-strategy result summary.
+- Remove the Point strategy selector; show all four strategy cards together instead.
+- Display Point scenario conditions in a collapsed disclosure:
   - Initial balance `10,000`.
   - Deduction amount `1,000`.
   - Concurrent requests `15`.
   - Maximum valid successful deductions `10`.
   - Retry policy none.
   - Scenario-specific condition such as before `Point.@Version` for the transaction-only failure reproduction.
-- Display expected-vs-actual summary with scenario-specific wording:
-  - Expected final balance under this scenario.
-  - Observed final balance.
-  - Lost Update occurred or balance invariant preserved.
-- Add a meaning-focused Point strategy comparison card section instead of a final-balance chart.
-- Each card should show strategy name, expected and recorded result, invariant match, one short mechanism or conclusion, and required caveats.
-- For Optimistic Lock, label the numeric result as one documented observed execution example and keep the no-retry / run-variability caveat visible.
-- Keep supporting success/failure counts available in concise supporting copy or expandable details, but do not make them the primary pattern of the section.
+- Add four substantially compact strategy cards:
+  - Transaction Only: `15건 성공 · 잔액 8,000원`, `Lost Update 발생` or `문제 발생`.
+  - Pessimistic Lock: `10건 성공 · 잔액 0원`, `정상 차감`.
+  - Optimistic Lock: `잔액 7,000원 · 실행 예시`, `충돌 감지`.
+  - Atomic Update: `10건 성공 · 잔액 0원`, `정상 차감`.
+- Limit each card to strategy name, primary result, plain-language status, and one short mechanism or conclusion when useful.
+- Do not use `불변식` as the primary recruiter-facing label.
+- For Optimistic Lock, keep `실행 예시` visible but move no-retry and run-variability detail into collapsed technical content.
+- Remove report-style card content:
+  - `성공 수 기준 잔액 -5,000원`.
+  - Repeated execution-condition labels.
+  - Long invariant explanations.
+  - Duplicated caveat blocks.
 - Avoid a separate `수치로 보기` table for the Point view.
 - Do not present the Point comparison as a chart-led report.
-- Add cause and mechanism copy.
-- Add guarantee, limitation, and appropriate use case for each strategy.
-- Add collapsed evidence links using public GitHub URLs.
+- Remove the static request-flow placeholder from Phase 3.
+- Consolidate cause, mechanism, guarantee, limitation, appropriate use case, static-data limitation, and public evidence links into compact disclosures collapsed by default.
 
 ### Acceptance Criteria
 
 - The Point result is understandable without animation.
 - The Point comparison is presented as compact cards rather than a chart/table pair.
-- Expected final balance `0` is always tied to the recorded Point scenario conditions.
+- All four cards are visible together without a Point strategy selector.
+- No separate selected-strategy result summary duplicates card content.
+- The Point problem definition contains no strategy-specific result block.
 - Transaction-only failure is framed as an intentional failure-reproduction configuration, not obsolete code.
-- Optimistic-lock result is labeled as one documented observed example where counts are variable.
+- Optimistic-lock result is visibly labeled as an execution example; variability detail remains available in collapsed technical content.
+- Conditions, technical explanation, static-data limitation, and evidence are collapsed by default.
+- No static request-flow placeholder appears in Phase 3.
 - Evidence is collapsed by default and uses public GitHub URLs.
 - No local repository paths are rendered.
 - No duplicated metric block repeats the same values unnecessarily.
@@ -428,11 +445,18 @@ Suggested future areas:
 
 ### Goal
 
-Add a representative, optional request-flow animation to the completed Point slice.
+Return the request-flow area only when it provides a representative, optional, meaningful playback experience.
 
 ### Scope
 
-Animation state machine, explicit play control, replay, skip, reduced-motion behavior, and strategy-specific visual cues.
+A working animation state machine, explicit play control, replay, skip, reduced-motion behavior, and a causally meaningful Point Lost Update sequence.
+
+Phase boundary:
+
+- Phase 3 contains no static request-flow placeholder.
+- Phase 4 introduces the request-flow area together with the working animation and playback controls.
+- Do not add a large request-flow area before the experience is functional.
+- Playback supplements the static Point explanation; it does not own or dynamically update card outcomes, charts, or a result summary.
 
 ### Files or areas likely to be affected
 
@@ -455,11 +479,13 @@ Suggested future areas:
   - conflict/failure/success.
   - completed.
 - Use 8 to 12 representative request nodes.
+- Show the transaction-only Lost Update cause clearly: overlapping reads of the same balance, competing writes, and an overwritten deduction.
 - Add explicit play button with Korean label such as `기록된 요청 흐름 재생`.
 - Add replay and skip controls.
 - Respect `prefers-reduced-motion` by skipping or heavily simplifying motion.
-- Keep summary, chart, and explanation accessible before playback.
-- Reset animation to idle on experiment or strategy switch.
+- Keep the compact Point problem definition, comparison cards, and collapsed details accessible before playback.
+- Reset animation to idle when the experiment changes.
+- Keep all four strategy cards static during playback; do not update a chart or create/update a selected-strategy summary when animation stages change.
 - Add copy explaining that the animation replays simplified recorded results and does not run Java concurrency tests.
 - Implement with React state and CSS transitions if sufficient.
 - Avoid a heavy animation library unless later implementation proves CSS transitions are inadequate.
@@ -468,6 +494,9 @@ Suggested future areas:
 
 - Animation does not autoplay.
 - Result remains understandable when animation is never played.
+- The animation earns its page space by explaining concurrency flow; it is not a decorative placeholder.
+- Playback makes the stale-read/competing-write/overwrite sequence understandable.
+- Playback completion does not alter the four card outcomes or reveal a separate dynamic result panel.
 - Skip immediately reaches completed visual state.
 - Replay restarts the sequence.
 - Reduced-motion mode avoids unnecessary motion.
@@ -480,6 +509,7 @@ Suggested future areas:
 - Do not introduce real timers as performance evidence.
 - Do not add a heavy animation dependency without a documented reason.
 - Do not implement coupon-specific animation yet.
+- Do not add a Point strategy selector solely to control playback.
 
 ### Suggested Commit Boundary
 
@@ -500,28 +530,29 @@ Content review, card interpretation, mobile check, evidence-link check, and acce
 Suggested future areas:
 
 - `src/components/point/PointComparisonCards.tsx`
-- `src/components/experiment/ExpectedActualSummary.tsx`
+- `src/components/point/PointProblemDefinition.tsx`
 - `src/components/experiment/EvidenceDisclosure.tsx`
-- `src/data/experiments.ts`
 - `src/styles/`
 
 ### Tasks
 
 - Validate card labels and section text.
-- Confirm expected-vs-observed distinction.
-- Confirm Point expected balance is always scenario-specific.
-- Confirm optimistic-lock observed-example caveat is visible.
-- Check that success/failure counts are not repeated in summary, card labels, and paragraph text at the same time.
-- Verify mobile readability for selectors, summary, and cards.
+- Confirm the Point problem definition is concise and contains no strategy-specific result summary.
+- Confirm all four strategy outcomes are visible together.
+- Confirm optimistic-lock `실행 예시` is visible and its no-retry variability detail is available in collapsed technical content.
+- Check that success/failure counts are not repeated across cards, problem copy, and disclosures without a clear purpose.
+- Verify mobile readability for tabs, problem definition, cards, and disclosures.
 - Add or refine a card text alternative where needed.
+- Verify conditions, technical explanation, static-data limitation, and evidence are collapsed by default.
+- Verify the Phase 3 request-flow placeholder is absent.
 - Verify evidence links open public GitHub URLs.
 - Review technical wording against `docs/project-context.md` and `docs/experiment-data.md`.
 
 ### Acceptance Criteria
 
 - A reviewer can understand Point Lost Update within about ten seconds.
-- Card section and summary do not contradict each other.
-- The animation is clearly representational.
+- The compact problem definition and card section do not contradict each other.
+- The first view does not require strategy selection or backward attention movement.
 - The page does not imply live backend execution.
 - No local paths appear in rendered UI.
 - Point slice is stable enough to use as the pattern for Overselling and Duplicate.
@@ -743,15 +774,14 @@ Suggested future areas:
 - Verify desktop layout for scanability.
 - Verify tablet layout with wrapping selectors.
 - Verify mobile layout order:
-  - experiment selector,
-  - strategy selector,
-  - conditions,
-  - animation,
-  - summary,
-  - chart,
-  - explanation,
-  - evidence.
-- Ensure expected-vs-actual summary stacks cleanly on mobile.
+  - compact title and message,
+  - experiment tabs,
+  - Point problem definition,
+  - four Point strategy cards,
+  - Phase 4 playback when implemented,
+  - collapsed Point details.
+- Verify later coupon layouts separately where strategy selectors, summaries, and charts are approved.
+- Ensure later expected-vs-actual summaries stack cleanly on mobile where used.
 - Keep chart labels readable and avoid horizontal scrolling for the primary conclusion.
 - Simplify animation node count on mobile where needed.
 - Ensure selectors are keyboard-accessible and expose selected state.
@@ -766,8 +796,8 @@ Suggested future areas:
 ### Acceptance Criteria
 
 - Mobile users can understand the conclusion without horizontal scrolling.
-- Keyboard users can operate tabs, strategy selectors, animation controls, and evidence disclosure.
-- Screen readers receive the conclusion before secondary metrics.
+- Keyboard users can operate tabs, strategy selectors where present, Phase 4 animation controls, and evidence disclosure.
+- Screen readers receive the Point problem definition and four card outcomes before secondary details.
 - Reduced-motion users can access completed state without motion-heavy playback.
 - Charts have useful text alternatives.
 
@@ -988,13 +1018,14 @@ MVP completion checklist:
 - Strategy labels match the approved Korean terminology.
 - Baseline scenarios are framed as intentional failure-reproduction configurations.
 - Scenario-specific conditions such as before `@Version` or before unique constraint are visible with results.
-- Expected-vs-actual summaries exist for every experiment.
+- Point strategy outcomes exist in the four compact cards; later experiments use expected-vs-actual summaries only where separately approved.
 - Database strategy charts exist where comparable data exists, but the Point slice uses cards for strategy comparison.
 - Optimistic-lock observed examples are labeled correctly.
 - Redis Counter and Redis Lua appear in a separate Redis front-line gate section.
 - Redis is not presented as PostgreSQL durability or as a distributed transaction.
-- Animations are optional, explicit, replayable, skippable, and reduced-motion aware.
+- Animations are optional, explicit, replayable, skippable, and reduced-motion aware when introduced in their approved phases.
 - The result remains understandable without playing animation.
+- Point Phase 3 contains no static request-flow placeholder.
 - Evidence links are collapsed by default.
 - Evidence links render public GitHub URLs only.
 - Local repository paths are never rendered.

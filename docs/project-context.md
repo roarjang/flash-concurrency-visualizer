@@ -25,20 +25,17 @@ Those details are spread across README content, strategy documents, implementati
 
 ## 3. Visualization Goal
 
-The React application should help a reviewer understand a selected concurrency experiment in about ten seconds.
+The React application should help a reviewer understand the selected concurrency problem in about ten seconds.
 
-For each supported experiment and strategy, the UI should make these items immediately visible:
+For Point Lost Update, the first view should make these items immediately visible:
 
 - the tested problem,
-- the test conditions,
-- the expected invariant,
-- the observed result,
-- the cause of the result,
-- the strategy guarantee,
-- the strategy limitation,
-- links or references to supporting backend test code and documentation.
+- all four strategy outcomes,
+- concise plain-language result statuses.
 
-The application should explain the selected strategy without presenting any strategy as universally best. It should make correctness, contention, retry behavior, lock waiting, Redis/PostgreSQL boundaries, and operational complexity understandable at a portfolio-review level.
+Conditions, technical cause, guarantees, limitations, use cases, the static-data limitation, and evidence should remain available as secondary information rather than competing with the first-view comparison. Later experiments may use selected-strategy views when separately approved.
+
+The application should compare strategies without presenting any strategy as universally best. It should make correctness, contention, retry behavior, lock waiting, Redis/PostgreSQL boundaries, and operational complexity understandable at a portfolio-review level.
 
 ## 4. Target Audience
 
@@ -49,7 +46,7 @@ The primary audience is:
 - technical interviewers,
 - engineering managers.
 
-Many viewers may spend only a short time on the page. The first screen for a selected experiment should prioritize the problem, expected value, actual value, and reason for the result before deeper technical details.
+Many viewers may spend only a short time on the page. The Point first screen should prioritize the compact problem definition and four strategy outcomes; conditions and deeper technical reasoning should remain discoverable in collapsed secondary content.
 
 ## 5. Source Backend Project
 
@@ -112,9 +109,11 @@ The frontend visualizes recorded experiment results. It must not execute real lo
 
 The UI must clearly state that animations are simplified visual explanations based on previously recorded backend JUnit tests.
 
+The recorded-data and no-live-execution limitation should be discoverable in a secondary disclosure or footer. It should not become the hero message or dominate the first-view hierarchy.
+
 ### Preserve experiment context
 
-Do not show numeric results without their conditions. Each result should include relevant context such as:
+Do not detach numeric results from their conditions. Relevant context must remain available near the results, and may be collapsed by default for the recruiter-first Point view:
 
 - initial balance or coupon stock,
 - deduction amount,
@@ -164,18 +163,17 @@ It is a controlled backend concurrency experiment and strategy-comparison portfo
 
 The application should use static recorded data derived from backend repository evidence. The data model should distinguish experiment scenario conditions, observed results, and current repository implementation state.
 
-The planned interaction model is:
+The planned Point interaction model is:
 
-1. Select an experiment.
-2. Select a strategy.
-3. Review the test conditions.
-4. Replay a simplified concurrent-request animation.
-5. See expected values and actual values immediately.
-6. Compare Point strategies through a compact strategy comparison card section.
-7. Read cause, guarantee, limitation, trade-off, and suitable use case.
-8. Open the relevant backend test code or documentation as evidence.
+1. Select or land on Point Lost Update.
+2. Read one compact problem definition.
+3. Compare all four strategy outcomes together without a strategy selector.
+4. Open conditions, technical explanation, static-data limitation, or evidence only when wanted.
+5. Beginning in Phase 4, optionally play a working request-flow explanation.
 
-The animation is explanatory only. It should represent concepts such as simultaneous reads, stale writes, lock waiting, version conflicts, atomic updates, Redis gates, or duplicate rejection. It must not imply that the browser is executing live concurrent database requests.
+Point does not use a separate selected-strategy result summary or a chart-based comparison. Later experiments may use strategy selection, summaries, and charts where their approved designs benefit from them.
+
+The Phase 4 animation is explanatory only. It must make a real concurrency cause easier to understand, such as overlapping reads, competing writes, and an overwritten deduction. It must not be a static placeholder, imply live concurrent database requests, or update charts or result summaries.
 
 ## 8. Initial Scope
 
@@ -300,13 +298,14 @@ This document is not an implementation guide. It defines the product context, ev
 The first visualizer version should satisfy these criteria:
 
 - A reviewer can understand the selected problem within about ten seconds.
-- Expected and actual values are immediately visible.
+- The Point problem definition and all four Point strategy outcomes are immediately visible.
 - Displayed values match verified backend test evidence or are clearly marked as `TODO`/`Unverified`.
-- Test conditions are shown near the result values.
-- Scenario-specific conditions such as `before @Version` or `before unique constraint` are shown with the result.
+- Test conditions remain discoverable near the result values and may be collapsed by default.
+- Scenario-specific conditions such as `before @Version` or `before unique constraint` remain available with the result context.
 - Strategy trade-offs are understandable without reading all backend documents first.
 - The UI does not imply live backend execution.
-- Simplified animations do not misrepresent guarantees or failure modes.
+- Phase 4 playback, when introduced, is meaningful, optional, and does not misrepresent guarantees or failure modes.
+- The recorded-data limitation remains discoverable as secondary information without dominating the hero.
 - The application works on desktop and mobile.
 - The application can be built with `npm run build` and deployed as static `dist` output on Vercel.
 - Relevant backend test code and documentation are discoverable from each experiment.
@@ -409,3 +408,8 @@ Risks:
 - The public backend repository URL is static MVP metadata and does not require an environment variable.
 - Korean-first names and English supporting names should both be represented.
 - Current test executability is evidence metadata rather than primary result logic.
+- Point Lost Update uses a recruiter-first compact problem definition and four always-visible strategy cards.
+- Point Lost Update does not use a chart-based comparison, a strategy selector, or a separate dynamic result summary.
+- Point Phase 3 contains no request-flow placeholder; Phase 4 adds the area only with meaningful working playback.
+- Point Phase 4 playback does not update charts, card outcomes, or result summaries.
+- The static recorded-data limitation belongs in secondary disclosure or footer content, not the hero.
