@@ -23,7 +23,7 @@ export const strategies = [
   },
   {
     id: 'db-unique-constraint',
-    name: { ko: 'DB 유니크 제약조건', en: 'Database Unique Constraint' },
+    name: { ko: '유니크 제약', en: 'Database Unique Constraint' },
     group: 'database',
   },
   {

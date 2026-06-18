@@ -189,7 +189,7 @@ const DuplicateConditions = ({
 
           <p className="scenario-condition">
             <strong>실패 재현 조건</strong>
-            <span>DB UNIQUE 적용 전 · Retry 없음 · 애플리케이션 레벨 중복 확인</span>
+            <span>DB UNIQUE 적용 전 · 애플리케이션 중복 확인만 적용</span>
           </p>
         </div>
       </details>
@@ -208,7 +208,7 @@ const strategySummaries: Partial<
 > = {
   'transaction-only': {
     lead: '여러 요청이 첫 저장 전에 중복 확인을 통과했습니다.',
-    support: '같은 사용자-쿠폰 조합이 함께 기록될 수 있습니다.',
+    support: '같은 사용자-쿠폰 조합이 중복으로 기록됩니다.',
   },
   'db-unique-constraint': {
     lead: '두 번째부터 같은 사용자-쿠폰 저장을 DB가 거부했습니다.',
