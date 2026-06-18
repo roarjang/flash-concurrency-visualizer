@@ -287,8 +287,9 @@ main {
 .point-playback__header-row {
   display: flex;
   gap: 1rem;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 .point-playback__note {
@@ -960,6 +961,7 @@ main {
   }
 
   .point-playback__button {
+    margin-left: 0;
     width: 100%;
   }
 

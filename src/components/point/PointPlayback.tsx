@@ -255,9 +255,7 @@ export const PointPlayback = () => {
     >
       <header className="point-playback__header">
         <div className="point-playback__header-row">
-          <div>
-            <h3 id="playback-heading">Lost Update 발생 과정</h3>
-          </div>
+          <h3 id="playback-heading">Lost Update 발생 과정</h3>
 
           <button
             className="point-playback__button"
