@@ -996,10 +996,10 @@ export const experiments = [
   {
     id: 'duplicate-coupon-issuance',
     name: {
-      ko: '동일 사용자 쿠폰 중복 발급',
+      ko: '쿠폰 중복 발급',
       en: 'Duplicate Coupon Issuance',
     },
-    descriptionKo: '같은 사용자가 같은 쿠폰을 동시에 여러 번 발급받는 문제',
+    descriptionKo: '한 사용자가 같은 쿠폰을 여러 번 발급받을 수 있는 문제',
     category: 'coupon-uniqueness',
     invariantKo: '같은 (user_id, coupon_id) 조합에는 발급 기록이 최대 하나만 존재해야 한다.',
     records: [

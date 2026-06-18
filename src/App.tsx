@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { ExperimentTabs } from './app/ExperimentTabs.tsx'
 import { CouponWorkspace } from './components/coupon/CouponWorkspace.tsx'
+import { DuplicateWorkspace } from './components/duplicate/DuplicateWorkspace.tsx'
 import { PointWorkspace } from './components/point/PointWorkspace.tsx'
 import { experiments } from './data/experiments.ts'
-import type { ExperimentId } from './types/experiment.ts'
+import type { ExperimentDefinition, ExperimentId } from './types/experiment.ts'
 
 function App() {
   const [selectedExperimentId, setSelectedExperimentId] =
@@ -13,6 +14,7 @@ function App() {
     experiments.find(
       (experiment) => experiment.id === selectedExperimentId,
     ) ?? experiments[0]
+  const fallbackExperiment = selectedExperiment as ExperimentDefinition
 
   const handleExperimentSelect = (experimentId: ExperimentId) => {
     const nextExperiment = experiments.find(
@@ -58,12 +60,14 @@ function App() {
               <PointWorkspace experiment={selectedExperiment} />
             ) : selectedExperiment.id === 'coupon-overselling' ? (
               <CouponWorkspace experiment={selectedExperiment} />
+            ) : selectedExperiment.id === 'duplicate-coupon-issuance' ? (
+              <DuplicateWorkspace experiment={selectedExperiment} />
             ) : (
               <div className="selection-placeholder" aria-live="polite">
                 <p className="selection-placeholder__label">현재 선택</p>
-                <h3>{selectedExperiment.name.ko}</h3>
+                <h3>{fallbackExperiment.name.ko}</h3>
                 <p className="selection-placeholder__supporting">
-                  {selectedExperiment.name.en}
+                  {fallbackExperiment.name.en}
                 </p>
                 <p className="selection-placeholder__message">
                   이 실험의 상세 조건과 결과 시각화는 이후 구현 단계에서
