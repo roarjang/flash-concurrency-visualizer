@@ -182,10 +182,6 @@ const CouponConditions = ({
               <dt>서로 다른 사용자</dt>
               <dd>{formatNumber(conditions.users.count)}명</dd>
             </div>
-            <div>
-              <dt>Retry</dt>
-              <dd>없음</dd>
-            </div>
           </dl>
 
           <p className="scenario-condition">
