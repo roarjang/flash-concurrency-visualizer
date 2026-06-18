@@ -3,6 +3,7 @@ import { EvidenceDisclosure } from './EvidenceDisclosure.tsx'
 import { PointComparisonCards } from './PointComparisonCards.tsx'
 import { PointConditions } from './PointConditions.tsx'
 import { PointExplanation } from './PointExplanation.tsx'
+import { PointPlayback } from './PointPlayback.tsx'
 
 type PointWorkspaceProps = {
   readonly experiment: ExperimentDefinition
@@ -24,6 +25,7 @@ export const PointWorkspace = ({ experiment }: PointWorkspaceProps) => {
         <p>{experiment.descriptionKo}</p>
       </header>
 
+      <PointPlayback />
       <PointComparisonCards experiment={experiment} />
       <PointConditions
         conditions={baselineRecord.conditions}
