@@ -282,6 +282,7 @@ export const CouponWorkspace = ({ experiment }: CouponWorkspaceProps) => {
       <GroupedEvidenceDisclosure
         headingId="coupon-evidence-heading"
         experimentItems={evidence}
+        mode="coupon"
       />
     </div>
   )

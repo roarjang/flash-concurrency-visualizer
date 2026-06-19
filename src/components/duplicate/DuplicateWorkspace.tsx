@@ -277,6 +277,7 @@ export const DuplicateWorkspace = ({ experiment }: DuplicateWorkspaceProps) => {
       <GroupedEvidenceDisclosure
         headingId="duplicate-evidence-heading"
         experimentItems={evidence}
+        mode="duplicate"
       />
     </div>
   )
