@@ -41,17 +41,16 @@ For Duplicate Coupon Issuance, the first view should make this scan path immedia
 
 `허용 1건 → 발급 기록 10건 → 중복 발급 발생 → DB UNIQUE 적용 후 1건`
 
-After the selected experiment workspace, the shared Redis section should make this architecture path immediate:
+Coupon and Duplicate place a contextual Redis flow directly after their database strategy cards:
 
-`많은 요청 → Redis 선행 승인 → PostgreSQL 저장`
+- Coupon: `1,000건 요청 → 승인 100건 → Redis Counter → PostgreSQL 저장`
+- Duplicate: `100건 요청 → 승인 1건 → Redis Lua Script → PostgreSQL 저장`
 
-The overall recruiter scan path is:
+Point does not show Redis.
 
-`Point → Coupon → Duplicate → Redis`
+Conditions, technical cause, guarantees, limitations, use cases, and evidence should remain available as secondary information rather than competing with the first-view comparison.
 
-Conditions, technical cause, guarantees, limitations, use cases, the static-data limitation, and evidence should remain available as secondary information rather than competing with the first-view comparison.
-
-The application should compare strategies without presenting any strategy as universally best. It should make correctness, contention, retry behavior, lock waiting, Redis/PostgreSQL boundaries, and operational complexity understandable at a portfolio-review level. Redis is a shared coupon-issuance architecture extension, not a fourth concurrency problem.
+The application should compare strategies without presenting any strategy as universally best. It should make correctness, contention, retry behavior, lock waiting, Redis/PostgreSQL boundaries, and operational complexity understandable at a portfolio-review level. Redis is a coupon-issuance architecture extension, not a fourth concurrency problem.
 
 ## 4. Target Audience
 
@@ -123,9 +122,7 @@ Current repository implementation state may be shown as supporting metadata, but
 
 The frontend visualizes recorded experiment results. It must not execute real load tests, database locks, Redis operations, concurrent requests, or Spring backend calls.
 
-The UI must clearly state that Phase 4 playback is a simplified explanation based on a previously recorded backend JUnit test.
-
-The recorded-data and no-live-execution limitation should be discoverable in a secondary disclosure or footer. It should not become the hero message or dominate the first-view hierarchy.
+Phase 4 playback must remain conceptual and must not execute backend concurrency traffic.
 
 ### Preserve experiment context
 
@@ -185,7 +182,7 @@ The planned Point interaction model is:
 2. Read one compact workspace summary.
 3. Optionally start a conceptual, stage-based Lost Update failure explanation.
 4. Compare all four strategy outcomes together without a strategy selector.
-5. Open conditions, technical explanation, static-data limitation, or evidence only when wanted.
+5. Open conditions, technical explanation, or evidence only when wanted.
 
 Point does not use a separate selected-strategy result summary or a chart-based comparison.
 
@@ -201,9 +198,10 @@ Coupon Overselling reuses the finalized recruiter-first comparison-card approach
 
 1. Read the compact problem summary: stock `100`, issued records `1,000`, and `재고 초과 발급`.
 2. Compare all four database strategy outcomes together without a strategy selector.
-3. Open conditions, strategy explanation, static-data limitation, or evidence only when wanted.
+3. Review the Redis Counter flow directly after the strategy cards.
+4. Open responsibility, conditions, strategy explanation, or combined evidence only when wanted.
 
-The Coupon problem summary explains the failure. The four static strategy cards explain outcomes. Collapsed disclosures contain technical depth. Coupon uses no playback, grouped bar chart, strategy selector, or dynamic summary section.
+The Coupon problem summary explains the failure. The four static strategy cards explain outcomes. The Redis Counter flow explains admission control. Collapsed disclosures contain technical depth. Coupon uses no playback, strategy selector, or dynamic summary section.
 
 The Coupon conditions UI keeps only the high-signal setup values: stock `100`, concurrent requests `1,000`, and `1,000` distinct users. Retry remains recorded scenario data but is not a separate recruiter-facing condition card.
 
@@ -211,24 +209,26 @@ Duplicate Coupon Issuance reuses the finalized Coupon static comparison pattern.
 
 1. Read the compact problem summary: allowed maximum `1`, recorded issued records `10`, and `중복 발급 발생`.
 2. Compare the transaction-only and DB UNIQUE outcomes together.
-3. Open conditions, strategy explanation, static-data limitation, or evidence only when wanted.
+3. Review the Redis Lua Script flow directly after the strategy cards.
+4. Open responsibility, conditions, strategy explanation, or combined evidence only when wanted.
 
 Playback is unnecessary because the user-coupon uniqueness violation is immediately understandable from `1건 → 10건`. The Duplicate problem summary explains the failure. The two static comparison cards explain outcomes. Collapsed disclosures contain technical depth. Duplicate uses no playback, chart, strategy selector, or dynamic summary.
 
-DB UNIQUE protects the `(user_id, coupon_id)` uniqueness invariant by rejecting the second and later duplicate rows. It is not a stock-control strategy and must not be presented as protection against total coupon overselling. Redis remains outside Phase 6 and belongs to the shared Phase 7 architecture section.
+DB UNIQUE protects the `(user_id, coupon_id)` uniqueness invariant by rejecting the second and later duplicate rows. It is not a stock-control strategy and must not be presented as protection against total coupon overselling. Redis remains outside Phase 6 and belongs to the contextual Phase 7 architecture flow.
 
-The Duplicate conditions UI omits coupon stock because stock control is not the Phase 6 concern. Its failure context is `DB UNIQUE 적용 전 · Retry 없음 · 애플리케이션 레벨 중복 확인`, and the concise transaction-only explanation is `여러 요청이 중복 확인을 통과했습니다.`
+The Duplicate conditions UI omits coupon stock because stock control is not the Phase 6 concern. Its failure context is `DB UNIQUE 적용 전 · 애플리케이션 중복 확인만 적용`, and the concise transaction-only explanation is `여러 요청이 중복 확인을 통과했습니다.`
 
-The shared Redis interaction model is:
+The Redis interaction model is:
 
-1. Render one Redis section after the selected experiment workspace and outside the experiment tab panel.
-2. Read the static flow `많은 요청 → Redis 선행 승인 → PostgreSQL 저장`.
-3. Compare the always-visible Redis Counter and Redis Lua capability cards.
-4. Open responsibility details or Redis evidence only when wanted.
+1. Do not render Redis for Point Lost Update.
+2. In Coupon, render the Counter flow after strategy cards: `1,000건 요청 → 승인 100건 → Redis Counter → PostgreSQL 저장`.
+3. In Duplicate, render the Lua Script flow after strategy cards: `100건 요청 → 승인 1건 → Redis Lua Script → PostgreSQL 저장`.
+4. Open the responsibility disclosure for the approval-versus-completion boundary.
+5. Open one combined evidence disclosure containing `실험 근거` and `Redis 근거`.
 
-Redis is not a fourth experiment and does not receive a dedicated tab. It applies only to coupon issuance scenarios, even though the shared section remains visible after any selected workspace. The section uses no playback, animation, chart, selector, or dynamic summary.
+Redis is not a fourth experiment and does not receive a dedicated tab. The contextual flows use no playback, animation, chart, selector, or dynamic summary.
 
-The architecture flow explains admission control. The capability cards explain Redis responsibilities. The collapsed responsibility disclosure explains that Redis approval is not issuance completion, PostgreSQL remains the durable source of truth, database uniqueness constraints remain necessary, and Redis/PostgreSQL do not form one distributed transaction.
+The architecture flow explains admission control and the scenario-specific Redis responsibility. The collapsed responsibility disclosure states that Redis approval is not issuance completion and PostgreSQL storage must complete before a final record exists. The combined evidence disclosure owns both experiment and Redis source links.
 
 ## 8. Initial Scope
 
@@ -259,8 +259,8 @@ Coupon Overselling:
 - Pessimistic lock, atomic update, Redis Counter, and Redis Lua have tests asserting stock-sized success and final persisted consistency.
 - Optimistic lock has documented observed values of `successCount = 100`, `failCount = 900`, `issuedCouponCountByCoupon = 100`, `finalIssuedQuantity = 100`, but the code and docs should be interpreted conservatively as no-oversell/conflict-detection evidence without a universal no-retry full-exhaustion guarantee.
 - The recruiter-first presentation uses a compact problem summary and four always-visible database strategy cards.
-- Conditions, strategy explanation, static-data limitation, and evidence remain collapsed by default.
-- Coupon Overselling does not use playback, a strategy selector, a grouped bar chart, or a dynamic summary section.
+- Redis responsibility, conditions, strategy explanation, and combined evidence remain collapsed by default.
+- Coupon Overselling does not use playback, a strategy selector, or a dynamic summary section.
 
 Coupon Duplicate Issuance:
 
@@ -271,31 +271,30 @@ Coupon Duplicate Issuance:
 - Current repository implementation state: `IssuedCoupon` now has the `uk_issued_coupon_user_coupon` unique constraint, so the original duplicate failure scenario is an earlier recorded experiment configuration.
 - Confirmed first-release scope: this experiment demonstrates the distinct invariant that one `(user_id, coupon_id)` pair should have at most one issued coupon record.
 - The recruiter-first presentation uses a compact problem summary and two always-visible database strategy cards.
-- Conditions, strategy explanation, static-data limitation, and evidence remain collapsed by default.
-- Duplicate Coupon Issuance does not use playback, a chart, a strategy selector, a dynamic summary, or Redis content.
+- Redis responsibility, conditions, strategy explanation, and combined evidence remain collapsed by default.
+- Duplicate Coupon Issuance does not use playback, a chart, a strategy selector, or a dynamic summary.
 - DB UNIQUE is presented only as protection for user-coupon uniqueness, not as stock control.
 
-### First-release shared Redis architecture section
+### First-release contextual Redis architecture
 
-The Redis section is rendered once after the selected experiment workspace. It is a shared coupon-issuance architecture extension, not a fourth experiment, fourth tab, or additional concurrency problem.
+Redis appears only in Coupon and Duplicate, directly after their strategy cards. It is a coupon-issuance architecture extension, not a fourth experiment, fourth tab, or additional concurrency problem.
 
-Primary lesson:
+Section introduction:
 
-`많은 요청 → Redis 선행 승인 → PostgreSQL 저장`
+`Redis가 PostgreSQL 저장 전에 요청을 선별합니다.`
 
 Redis Counter:
 
 - Implemented and verified for coupon stock gating with distinct users.
-- Presented as `재고 슬롯 선행 제어`.
-- Recorded example: `1,000건 요청 → 100건 승인`.
+- Presented in the Coupon flow as `재고 수량 선행 확인`.
+- Recorded flow: `1,000건 요청 → 승인 100건 → Redis Counter → PostgreSQL 저장`.
 - It does not track users or prevent duplicate issuance by itself.
 
 Redis Lua Script:
 
 - Implemented and verified for Redis-side stock and duplicate gates.
-- Presented as checking stock and user conditions together.
-- Recorded stock example: `1,000건 → 100건`.
-- Recorded duplicate example: `100건 → 1건`.
+- Presented in the Duplicate flow as `재고 수량 + 사용자 중복 확인`.
+- Recorded flow: `100건 요청 → 승인 1건 → Redis Lua Script → PostgreSQL 저장`.
 - Its atomicity is limited to Redis-side checks and updates.
 
 Shared boundaries:
@@ -305,6 +304,20 @@ Shared boundaries:
 - PostgreSQL remains the durable source of truth.
 - The database unique constraint remains the final user-coupon uniqueness guard.
 - Redis and PostgreSQL do not share one distributed transaction.
+
+Coupon and Duplicate each end with one `근거 자료 보기` disclosure containing:
+
+- `실험 근거`
+- `Redis 근거`
+
+Evidence ordering is optimized for scanning:
+
+- Point: implementation evidence, then experiment documents, then project references, separated only by subtle spacing.
+- Coupon `실험 근거`: coupon implementation evidence, then coupon experiment documents, then backend project references.
+- Duplicate `실험 근거`: duplicate implementation evidence, then coupon experiment documents, then schema/runbook and roadmap references.
+- `Redis 근거`: Redis Lua test fixture, then Redis/PostgreSQL consistency-boundary document.
+
+No subgroup headings, badges, or additional descriptions are added.
 
 ### Later expansion after the first release
 
@@ -356,7 +369,6 @@ The planned frontend direction is:
 - React,
 - TypeScript,
 - Vite,
-- Recharts,
 - static JSON or TypeScript data derived from verified backend evidence,
 - static deployment on Vercel.
 
@@ -388,15 +400,15 @@ The first visualizer version should satisfy these criteria:
 - The UI does not imply live backend execution.
 - Phase 4 playback clearly explains the Lost Update overwrite sequence and then returns attention to the static strategy cards.
 - Playback is used only where final outcomes do not explain the failure mechanism quickly enough.
-- The recorded-data limitation remains discoverable as secondary information without dominating the hero.
 - The application works on desktop and mobile.
 - The application can be built with `npm run build` and deployed as static `dist` output on Vercel.
 - Relevant backend test code and documentation are discoverable from each experiment.
 - Redis and PostgreSQL responsibilities are clearly distinguished.
-- Redis renders once after the experiment workspace and remains outside experiment selection.
 - Redis is not presented as a fourth experiment or dedicated tab.
-- Redis Counter and Redis Lua are visible together without playback, animation, chart, selector, or dynamic summary.
-- The Redis section applies to coupon issuance scenarios only.
+- Redis is absent from Point and appears after strategy cards in Coupon and Duplicate.
+- Coupon uses the Counter flow `1,000건 요청 → 승인 100건 → Redis Counter → PostgreSQL 저장`.
+- Duplicate uses the Lua flow `100건 요청 → 승인 1건 → Redis Lua Script → PostgreSQL 저장`.
+- Redis uses no playback, animation, chart, selector, or dynamic summary.
 - Redis approval is distinguished from issuance completion, and PostgreSQL remains the durable source of truth.
 - Current backend implementation state is available as evidence metadata without becoming the primary product explanation.
 
@@ -490,11 +502,13 @@ Risks:
 
 - Point Lost Update, Coupon Overselling, and Duplicate Coupon Issuance are all included in the first public release.
 - Optimistic-lock numeric results should be stored and displayed as documented observed examples, not deterministic values.
-- Redis Counter and Redis Lua are shown once in a shared coupon-issuance architecture section after the selected experiment workspace.
+- Redis is shown contextually after strategy cards in Coupon and Duplicate and is not shown for Point.
 - Redis is not a fourth concurrency problem or a fourth experiment tab.
-- The Redis section uses the static flow `많은 요청 → Redis 선행 승인 → PostgreSQL 저장`.
-- Redis uses two always-visible capability cards and no playback, animation, chart, selector, or dynamic summary.
-- The architecture flow explains admission control, the cards explain Counter/Lua responsibilities, and the disclosure explains Redis/PostgreSQL boundaries.
+- Coupon uses `1,000건 요청 → 승인 100건 → Redis Counter → PostgreSQL 저장` with `재고 수량 선행 확인`.
+- Duplicate uses `100건 요청 → 승인 1건 → Redis Lua Script → PostgreSQL 저장` with `재고 수량 + 사용자 중복 확인`.
+- Redis uses static contextual flows with no playback, animation, chart, selector, or dynamic summary.
+- The contextual flow explains admission control and Redis responsibility; the responsibility disclosure explains the approval/completion boundary.
+- Coupon and Duplicate each use one combined evidence disclosure with `실험 근거` and `Redis 근거`.
 - Redis approval is not issuance completion; PostgreSQL remains the durable source of truth.
 - DB UNIQUE remains the final user-coupon uniqueness guard.
 - Evidence metadata should store both backend-root-relative `repositoryPath` values and public `githubUrl` values.
@@ -511,10 +525,9 @@ Risks:
 - Playback is reserved for failure mechanisms that cannot be understood quickly from outcomes alone.
 - Coupon Overselling reuses the finalized Point comparison-card pattern without playback.
 - Coupon Overselling uses a compact problem summary, four always-visible database strategy cards, and collapsed conditions, strategy explanation, and evidence.
-- Coupon Overselling does not use a strategy selector, grouped bar chart, or dynamic summary section.
+- Coupon Overselling does not use a strategy selector or dynamic summary section.
 - Duplicate Coupon Issuance reuses the finalized Coupon static comparison pattern without playback.
 - Duplicate Coupon Issuance uses a compact problem summary, two always-visible database strategy cards, and collapsed conditions, strategy explanation, and evidence.
-- Duplicate Coupon Issuance does not use a chart, strategy selector, dynamic summary, or Redis content.
+- Duplicate Coupon Issuance does not use a chart, strategy selector, or dynamic summary; its contextual Redis Lua flow follows the strategy cards.
 - Playback is unnecessary for Duplicate because the `1건 → 10건` violation explains the failure immediately.
 - DB UNIQUE protects user-coupon uniqueness and is not stock control.
-- The static recorded-data limitation belongs in secondary disclosure or footer content, not the hero.
