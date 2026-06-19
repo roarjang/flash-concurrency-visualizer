@@ -4,6 +4,14 @@
 
 이 Visualizer는 [Flash Coupon Payment](https://github.com/roarjang/coupon-concurrency-lab) 프로젝트에서 수행한 동시성 실험 결과를 시각화합니다. 다양한 동시성 제어 전략이 데이터 정합성에 어떤 영향을 주는지 비교하고 검증하는 데 초점을 맞췄습니다.
 
+## Live Demo
+
+https://concurrency-visualizer.vercel.app
+
+## Preview
+
+![Flash Concurrency Visualizer](docs/images/preview-point-lost-update.png)
+
 ## 프로젝트가 다루는 문제
 
 ### Point Lost Update

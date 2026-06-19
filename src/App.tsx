@@ -5,6 +5,7 @@ import { DuplicateWorkspace } from './components/duplicate/DuplicateWorkspace.ts
 import { PointWorkspace } from './components/point/PointWorkspace.tsx'
 import { experiments } from './data/experiments.ts'
 import type { ExperimentDefinition, ExperimentId } from './types/experiment.ts'
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   const [selectedExperimentId, setSelectedExperimentId] =
@@ -83,6 +84,8 @@ function App() {
       <footer className="site-footer">
         {/* <p>정적 화면입니다.</p> */}
       </footer>
+
+      <Analytics />
     </div>
   )
 }
