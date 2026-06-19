@@ -31,10 +31,6 @@ export const EvidenceDisclosure = ({
       <details>
         <summary>근거 자료 보기 ({items.length})</summary>
         <div className="evidence-content">
-          <p className="recorded-data-note">
-            이 화면은 기록된 백엔드 JUnit 동시성 테스트 결과를 시각화하며,
-            브라우저에서 실시간 동시성 요청을 실행하지 않습니다.
-          </p>
           <ul className="evidence-list">
             {items.map((item) => (
               <li key={item.id}>

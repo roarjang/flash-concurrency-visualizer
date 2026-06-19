@@ -1,7 +1,8 @@
 import { evidenceItems } from '../../data/evidence.ts'
 import { strategies } from '../../data/strategies.ts'
+import { GroupedEvidenceDisclosure } from '../evidence/GroupedEvidenceDisclosure.tsx'
+import { RedisGateSection } from '../redis/RedisGateSection.tsx'
 import type {
-  EvidenceItem,
   ExperimentConditions,
   ExperimentDefinition,
   StrategyId,
@@ -250,48 +251,12 @@ const DuplicateExplanation = ({
   </section>
 )
 
-const DuplicateEvidenceDisclosure = ({
-  records,
-}: {
-  readonly records: readonly StrategyRecord[]
-}) => {
-  const items: EvidenceItem[] = getEvidenceItems(records)
-
-  return (
-    <section className="point-section evidence-section" aria-labelledby="duplicate-evidence-heading">
-      <h3 id="duplicate-evidence-heading" className="visually-hidden">
-        근거 자료
-      </h3>
-
-      <details>
-        <summary>근거 자료 보기 ({items.length})</summary>
-        <div className="evidence-content">
-          <p className="recorded-data-note">
-            이 화면은 기록된 백엔드 JUnit 동시성 테스트 결과를 시각화하며,
-            브라우저에서 실시간 동시성 요청을 실행하지 않습니다.
-          </p>
-          <ul className="evidence-list">
-            {items.map((item) => (
-              <li key={item.id}>
-                <a href={item.githubUrl} target="_blank" rel="noreferrer">
-                  {item.labelKo}
-                  <span aria-hidden="true"> ↗</span>
-                </a>
-                {item.notes && <p>{item.notes}</p>}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </details>
-    </section>
-  )
-}
-
 export const DuplicateWorkspace = ({ experiment }: DuplicateWorkspaceProps) => {
   const databaseRecords = getDatabaseRecords(experiment)
   const baselineRecord = databaseRecords.find(
     (record) => record.strategyId === 'transaction-only',
   )
+  const evidence = getEvidenceItems(databaseRecords)
 
   if (!baselineRecord || baselineRecord.conditions.kind !== 'coupon-duplicate') {
     return null
@@ -306,9 +271,13 @@ export const DuplicateWorkspace = ({ experiment }: DuplicateWorkspaceProps) => {
 
       <DuplicateSummary record={baselineRecord} />
       <DuplicateComparisonCards records={databaseRecords} />
+      <RedisGateSection mode="duplicate" />
       <DuplicateConditions conditions={baselineRecord.conditions} />
       <DuplicateExplanation records={databaseRecords} />
-      <DuplicateEvidenceDisclosure records={databaseRecords} />
+      <GroupedEvidenceDisclosure
+        headingId="duplicate-evidence-heading"
+        experimentItems={evidence}
+      />
     </div>
   )
 }

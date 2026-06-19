@@ -77,7 +77,12 @@ function App() {
             )}
           </div>
         </section>
+
       </main>
+
+      <footer className="site-footer">
+        {/* <p>정적 화면입니다.</p> */}
+      </footer>
     </div>
   )
 }
