@@ -69,7 +69,7 @@ const CouponSummary = ({ record }: { readonly record: StrategyRecord }) => {
         </div>
 
         <p className="comparison-card__status" data-tone="problem">
-          재고 초과 발급
+          재고 불일치 발생
         </p>
       </article>
     </section>
@@ -92,23 +92,23 @@ const CouponComparisonCards = ({
     >
   > = {
     'transaction-only': {
-      status: '재고 초과 발급',
-      explanation: '같은 재고를 동시에 확인했습니다.',
+      status: '재고 불일치',
+      explanation: '발급 기록 수가 재고 한도를 초과했습니다.',
       tone: 'problem',
     },
     'pessimistic-lock': {
-      status: '재고 한도 유지',
-      explanation: '쿠폰 행을 잠가 요청을 한 번에 하나씩 처리했습니다.',
+      status: '재고 일관성 유지',
+      explanation: '같은 쿠폰 row의 재고 갱신을 락으로 보호했습니다.',
       tone: 'success',
     },
     'optimistic-lock': {
       status: '충돌 감지',
-      explanation: '충돌한 요청은 재시도 없이 실패했습니다.',
+      explanation: 'stale update를 감지했고 기록값은 한 실행의 관찰 예시입니다.',
       tone: 'conflict',
     },
     'atomic-update': {
-      status: '재고 한도 유지',
-      explanation: '조건 확인과 발급 수량 갱신을 하나의 UPDATE로 처리했습니다.',
+      status: '재고 일관성 유지',
+      explanation: '재고 조건과 수량 증가를 하나의 조건부 UPDATE로 처리했습니다.',
       tone: 'success',
     },
   }
@@ -218,7 +218,7 @@ const strategySummaries: Partial<
   },
   'atomic-update': {
     lead: '재고 조건과 발급 수량 갱신을 하나의 SQL UPDATE로 처리합니다.',
-    support: '단순한 수량 제어에 효과적입니다.',
+    support: '단순 수량 조건에는 적합하지만 규칙이 쿼리 중심으로 이동합니다.',
   },
 }
 

@@ -34,7 +34,7 @@ function App() {
       <header className="site-header">
         <h1>Flash Concurrency Visualizer</h1>
         <p className="project-summary">
-          같은 요청도 적용한 전략에 따라 결과가 달라집니다.
+          Flash Coupon Payment 백엔드 동시성 실험 결과를 요약한 보조 시각화입니다.
         </p>
       </header>
 

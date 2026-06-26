@@ -75,16 +75,16 @@ const playbackStages: readonly PlaybackStage[] = [
     step: 5,
     label: '결과',
     tone: 'problem',
-    note: 'Lost Update 발생을 확인합니다.',
+    note: '대표 2건의 Lost Update 흐름입니다.',
     requestCards: [
       { actor: 'A', value: '9,000원', caption: '대표 요청 A', tone: 'neutral', emphasis: 'soft' },
       { actor: 'B', value: '9,000원', caption: '대표 요청 B', tone: 'neutral', emphasis: 'soft' },
     ],
     result: {
-      attempted: '2건 차감 시도',
+      attempted: '대표 요청 2건',
       finalBalance: '9,000원',
       status: 'Lost Update 발생',
-      support: 'A와 B가 같은 계산값을 저장했습니다.',
+      support: '원인 설명용 흐름이며, 실제 기록된 15건 실행 결과는 아닙니다.',
     },
   },
 ] as const
@@ -233,7 +233,7 @@ export const PointPlayback = () => {
               <strong>{stage.result.attempted}</strong>
             </div>
             <div>
-              <span>최종 잔액</span>
+              <span>개념상 잔액</span>
               <strong>{stage.result.finalBalance}</strong>
             </div>
           </div>
@@ -255,7 +255,7 @@ export const PointPlayback = () => {
     >
       <header className="point-playback__header">
         <div className="point-playback__header-row">
-          <h3 id="playback-heading">Lost Update 발생 과정</h3>
+          <h3 id="playback-heading">Lost Update 개념 흐름</h3>
 
           <button
             className="point-playback__button"
@@ -273,8 +273,8 @@ export const PointPlayback = () => {
 
       <div className="point-playback__panel" data-stage={hasPlayed ? selectedStage.step : 'idle'}>
         {!hasPlayed ? (
-          <article className="point-playback__idle-balance" aria-label="현재 잔액 10,000원">
-            <span>현재 잔액</span>
+          <article className="point-playback__idle-balance" aria-label="예시 초기 잔액 10,000원">
+            <span>예시 초기 잔액</span>
             <strong>{formatNumber(10000)}원</strong>
           </article>
         ) : (
@@ -339,7 +339,7 @@ export const PointPlayback = () => {
               <div className="point-playback__conclusion">
                 <p>여러 요청이 같은 잔액을 읽어 이전 갱신을 덮어썼습니다.</p>
                 <span>
-                  기록된 15건의 실제 결과는 아래 전략 카드에서 확인할 수 있습니다.
+                  아래 전략 카드는 백엔드 테스트와 문서에 기록된 15건 동시 실행 결과입니다.
                 </span>
               </div>
             )}

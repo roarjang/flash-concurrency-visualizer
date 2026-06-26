@@ -16,11 +16,11 @@ const strategySummaries: Partial<
 > = {
   'transaction-only': {
     lead: '같은 잔액을 동시에 읽고 쓰면 덮어쓰기 문제가 생긴다.',
-    support: '공유 잔액에는 따로 막는 장치가 필요하다.',
+    support: '@Transactional만으로는 같은 row의 동시 갱신을 막지 못한다.',
   },
   'pessimistic-lock': {
-    lead: '한 번에 하나의 요청만 수정하도록 락을 건다.',
-    support: '정확하지만 충돌이 많으면 대기 시간이 늘어날 수 있다.',
+    lead: 'PESSIMISTIC_WRITE로 같은 포인트 row 갱신을 보호한다.',
+    support: '잔액 일관성은 유지되지만 충돌이 많으면 lock 대기가 늘 수 있다.',
   },
   'optimistic-lock': {
     lead: '버전 충돌을 감지해 오래된 갱신을 거부한다.',
@@ -28,7 +28,7 @@ const strategySummaries: Partial<
   },
   'atomic-update': {
     lead: '조건 확인과 차감을 하나의 UPDATE로 처리한다.',
-    support: '단순한 수량 제어에 효과적이다.',
+    support: '단순 조건에는 적합하지만 규칙이 쿼리 중심으로 이동한다.',
   },
 } as const
 

@@ -57,7 +57,7 @@ export const EvidenceDisclosure = ({
       </h3>
 
       <details>
-        <summary>근거 자료 보기 ({orderedItems.length})</summary>
+        <summary>백엔드 근거 보기 ({orderedItems.length})</summary>
         <div className="evidence-content">
           <ul className="evidence-list">
             {orderedItems.map(({ item, startsGroup }) => (

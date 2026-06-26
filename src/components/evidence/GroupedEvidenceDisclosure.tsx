@@ -89,7 +89,7 @@ const EvidenceList = ({
           {item.labelKo}
           <span aria-hidden="true"> ↗</span>
         </a>
-        {item.notes && item.id !== 'coupon-lua-fixture' && <p>{item.notes}</p>}
+        {item.notes && <p>{item.notes}</p>}
       </li>
     ))}
   </ul>
@@ -122,7 +122,7 @@ export const GroupedEvidenceDisclosure = ({
       </h3>
 
       <details>
-        <summary>근거 자료 보기 ({itemCount})</summary>
+        <summary>백엔드 근거 보기 ({itemCount})</summary>
         <div className="evidence-content evidence-groups">
           <section className="evidence-group">
             <h4>실험 근거</h4>

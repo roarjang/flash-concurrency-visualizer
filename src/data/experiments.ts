@@ -1081,7 +1081,7 @@ export const experiments = [
       {
         id: 'coupon-db-unique-constraint-duplicate-control',
         name: {
-          ko: 'DB UNIQUE 제약 중복 발급 방지',
+          ko: 'DB UNIQUE 제약 유일성 유지',
           en: 'Duplicate Control with Database Unique Constraint',
         },
         strategyId: 'db-unique-constraint',

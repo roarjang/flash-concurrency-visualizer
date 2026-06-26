@@ -18,26 +18,26 @@ const cardContent: Partial<
 > = {
   'transaction-only': {
     outcome: '잔액 8,000원',
-    status: '문제 발생',
-    explanation: '같은 잔액을 덮어써 일부 차감이 사라졌습니다.',
+    status: '잔액 불일치',
+    explanation: '성공 처리 수와 최종 잔액이 맞지 않았습니다.',
     tone: 'problem',
   },
   'pessimistic-lock': {
     outcome: '잔액 0원',
-    status: '정상 차감',
-    explanation: '요청을 한 번에 하나씩 처리했습니다.',
+    status: '잔액 일관성 유지',
+    explanation: '같은 포인트 row 갱신을 락으로 보호했습니다.',
     tone: 'success',
   },
   'optimistic-lock': {
-    outcome: '잔액 7,000원',
+    outcome: '잔액 7,000원(예시)',
     status: '충돌 감지',
-    explanation: '충돌한 요청은 재시도 없이 실패했습니다.',
+    explanation: 'stale update를 감지했고 재시도 없는 요청은 실패했습니다.',
     tone: 'conflict',
   },
   'atomic-update': {
     outcome: '잔액 0원',
-    status: '정상 차감',
-    explanation: '조건 확인과 차감을 하나의 UPDATE로 처리했습니다.',
+    status: '잔액 일관성 유지',
+    explanation: '잔액 조건과 차감을 하나의 조건부 UPDATE로 처리했습니다.',
     tone: 'success',
   },
 }

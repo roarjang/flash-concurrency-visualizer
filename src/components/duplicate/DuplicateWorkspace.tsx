@@ -78,7 +78,7 @@ const DuplicateSummary = ({ record }: { readonly record: StrategyRecord }) => {
         </div>
 
         <p className="comparison-card__status" data-tone="problem">
-          중복 발급 발생
+          유일성 위반
         </p>
       </article>
     </section>
@@ -101,13 +101,13 @@ const DuplicateComparisonCards = ({
     >
   > = {
     'transaction-only': {
-      status: '중복 발급 발생',
+      status: '유일성 위반',
       explanation: '여러 요청이 중복 확인을 통과했습니다.',
       tone: 'problem',
     },
     'db-unique-constraint': {
-      status: '중복 발급 방지',
-      explanation: '두 번째부터 같은 사용자-쿠폰 저장을 DB가 거부했습니다.',
+      status: '유일성 유지',
+      explanation: 'DB UNIQUE가 같은 user-coupon insert를 최종 거부했습니다.',
       tone: 'success',
     },
   }
@@ -213,7 +213,7 @@ const strategySummaries: Partial<
   },
   'db-unique-constraint': {
     lead: '두 번째부터 같은 사용자-쿠폰 저장을 DB가 거부했습니다.',
-    support: '유일성은 지키지만 재고 수량 제어는 아닙니다.',
+    support: '사용자-쿠폰 유일성만 보호하며 전체 재고 제어는 별도 전략이 필요합니다.',
   },
 }
 
